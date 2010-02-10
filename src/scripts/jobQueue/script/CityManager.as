@@ -381,7 +381,7 @@ package scripts.jobQueue.script
 			var castleLoc:int = castle.fieldId;
 			var x:int = Map.getX(castleLoc);
 			var y:int = Map.getY(castleLoc);
-			logMessage("Castle " + castle.name + " is at (" + x + "," + y + ")");
+			var cityMessage:String = "Castle " + castle.name + " is at (" + x + "," + y + ")";
 
 			// determine the type of the city based on its resource buildings
 			var farmCount:int = countBuilding(BuildingConstants.TYPE_FARM_LAND, 1);
@@ -389,12 +389,16 @@ package scripts.jobQueue.script
 			var stoneCount:int = countBuilding(BuildingConstants.TYPE_STONE_MINE, 1);
 			var ironCount:int = countBuilding(BuildingConstants.TYPE_IRON_MINE, 1);
 			if (lumberCount >= Math.max(farmCount, stoneCount, ironCount)) {
+				logMessage(cityMessage + ", and is a Wood City");
 				resourceFieldType = FieldConstants.TYPE_FOREST;
 			} else if (ironCount >= Math.max(farmCount, stoneCount)) {
+				logMessage(cityMessage + ", and is a Iron City");
 				resourceFieldType = FieldConstants.TYPE_HILL;
 			} else if (farmCount >= stoneCount) {
+				logMessage(cityMessage + ", And is a Food City");
 				resourceFieldType = FieldConstants.TYPE_LAKE;
 			} else {
+				logMessage(cityMessage + ", And is a Stone City... Why?");
 				resourceFieldType = FieldConstants.TYPE_DESERT;
 			}
 
@@ -2361,7 +2365,7 @@ package scripts.jobQueue.script
 		}
 		
 		private function injuredTroopHandle(response:InjuredTroopUpdate):void {
-			if (response.castleId != castle.id) return;
+			if (response.castleId != castle.id) return;			
 			if (response.goldNeed == 0) return;  // nothing to cure
 			
 			logMessage("Troop injured: " + troopBeanToString(response.troop) + ", healing requires " + response.goldNeed + " gold");
@@ -2790,9 +2794,11 @@ package scripts.jobQueue.script
 			}
 		}
 		
-		private function updateTroopRequirements() : void {
-			if (troopRequirements.length == 0) return;
-			if (troopProduceQueue == null) return;
+		private function updateTroopRequirements() : TroopBean {
+			if (troopRequirements.length == 0) {
+				return new TroopBean();
+			} 
+			if (troopProduceQueue == null) return new TroopBean();
 			var totalTroop:TroopBean = getAvailableTroop();
 			
 			// add troop from production queue to totalTroop
@@ -2803,19 +2809,18 @@ package scripts.jobQueue.script
 			}
 			
 			var types:Array = new Array(TFConstants.T_BATTERINGRAM, TFConstants.T_BALLISTA, TFConstants.T_CARRIAGE, TFConstants.T_SWORDSMEN, TFConstants.T_PIKEMAN, TFConstants.T_LIGHTCAVALRY, TFConstants.T_HEAVYCAVALRY, TFConstants.T_PEASANTS, TFConstants.T_MILITIA, TFConstants.T_SCOUTER, TFConstants.T_ARCHER, TFConstants.T_CATAPULT);
+			var typenames:Array = new Array( "battering rams" , "ballista" , "transporters" , "swordsmen" , "pikemen" , "cavs" , "cataphract" , "worker" , "warrior" , "scouts" , "archers", "catapults");
 			var type:int;
 			var bestLevel:int = getBuildingLevel(BuildingConstants.TYPE_BARRACK);
-
 			for each (var tr:TroopBean in troopRequirements) {
 				for each (type in types) {
 					if (!canProduceTroop(type, bestLevel, 0)) continue;	// check tech/building requirement
 					if (totalTroop[ troopIntNames[type] ] >= tr[troopIntNames[type] ] ) continue;
-					troopRequirement = tr;
-					return;
+					troopRequirement = tr;					
+					return tr;
 				}
-			}
-			
-			troopRequirement = null;
+			}					
+			return new TroopBean();
 		}
 
 		private function clearBarrackDumpItems(bean:AllProduceBean) : void {
@@ -3351,7 +3356,7 @@ package scripts.jobQueue.script
 
 		private var lastSearchHuntingLevel:int = -1;
 		private function handleSearchLocalFields() : void {
-			var r:int = 15;
+			var r:int = 20;
 			var cx:int = Map.getX(castle.fieldId);
 			var cy:int = Map.getY(castle.fieldId);
 			
@@ -4683,6 +4688,7 @@ package scripts.jobQueue.script
 
 		public function dumpResource(fieldId:int, cond:ResourceBean, res:ResourceBean) : Boolean {
 			if (countActiveArmies() >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) {
+				logMessage("Rally Spots filled");
 				return false;
 			}
 			
@@ -4691,8 +4697,15 @@ package scripts.jobQueue.script
 				return false;
 			}
 			
-			if (resource.gold < cond.gold || resource.food.amount < cond.food || resource.wood.amount < cond.wood && resource || resource.stone.amount < cond.stone || resource.iron.amount < cond.iron) return false;
-			if (resource.gold < res.gold || resource.food.amount < res.food || resource.wood.amount < res.wood && resource || resource.stone.amount < res.stone || resource.iron.amount < res.iron) return false;
+			if (resource.gold < cond.gold || resource.food.amount < cond.food || resource.wood.amount < cond.wood && resource || resource.stone.amount < cond.stone || resource.iron.amount < cond.iron) {
+				logMessage("Not Enough here to trigger dump");
+				return false;
+			}
+			
+			if (resource.gold < res.gold || resource.food.amount < res.food || resource.wood.amount < res.wood && resource || resource.stone.amount < res.stone || resource.iron.amount < res.iron) {
+				logMessage("Not Enough resources to transport");
+				return false;				
+			}
 
 			var techLevel:int = getTechLevel(TechConstants.LOAD_TECH);			
 			var numTrans:int = (res.gold + res.food + res.wood + res.stone + res.iron) / (5000+5000*techLevel/10);
@@ -4715,7 +4728,41 @@ package scripts.jobQueue.script
 
 			return true;
 		}
-		
+
+		public function keepTroops( fieldId:int , cond:TroopBean ) : Boolean {
+			var rsLevel:int = getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD);
+			if (countActiveArmies() >= rsLevel ) {
+				return false;
+			}
+			
+			if (cond == null) {
+				logMessage("Invalid condtion provided");
+				return false;
+			}
+			
+			var tr:TroopBean = new TroopBean();
+			var total:TroopBean = getAvailableTroop();
+			var totalObj:Object = total.toObject();
+			for (var key:String in totalObj) {
+				if (cond[key] > totalObj[key]) {
+					return false;	
+				} else {
+					tr[key] = totalObj[key] - cond[key];
+				}
+			}
+			
+			var newArmy:NewArmyParam = new NewArmyParam();
+			newArmy.troops = tr;
+			newArmy.resource = new ResourceBean();
+			newArmy.targetPoint = fieldId;
+			newArmy.missionType = ObjConstants.ARMY_MISSION_SEND;
+			
+			logMessage("  dumping troop to " + Map.fieldIdToString(fieldId) + " " + troopBeanToString(tr));
+			ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy);
+
+			return true;
+		}
+				
 		public function dumpTroop(fieldId:int, cond:TroopBean, tr:TroopBean) : Boolean {
 			if (countActiveArmies() >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) {
 				return false;
@@ -5471,8 +5518,13 @@ package scripts.jobQueue.script
     		
     		var type:String = (report.back) ? "BACK" : (report.attack) ? "ATT" : "DEFENSE";
 	  		var xml:XML = new XML(report.content);
+	  		   		
     		var startField:int = getFieldIdFromPosString(report.startPos);
     		var targetField:int = getFieldIdFromPosString(report.targetPos);
+
+	  		if ( xml.scoutReport.scoutInfo.heroLevel > 0 ) {
+	  			logMessage("Hero LVL " + xml.scoutReport.scoutInfo.heroLevel + " Found @ " + report.targetPos);
+	  		}
 
     		var myTroop:Boolean = (castle.fieldId == startField || castle.fieldId == targetField || hasField(targetField));
    			var responseTime:int = Utils.rand(7, 15);
@@ -5512,7 +5564,7 @@ package scripts.jobQueue.script
     		}
 
     		if (guardedAttackFieldId != -1 && response.report.attack && response.report.armyType == ObjConstants.ARMY_MISSION_SCOUT && targetField == guardedAttackFieldId) {
-    			var isScoutSuccess:String = xml.scoutReport.@isSuccess;
+    			var isScoutSuccess:String = xml.scoutReport.@isSuccess;    			
     			var troopsXML:XMLList = xml.scoutReport.scoutInfo.troops.troopStrType;
     			if (isScoutSuccess == "false") {
     				logMessage("Scouting failed, recall guarded attack troop in " + responseTime + "s");
@@ -5547,7 +5599,10 @@ package scripts.jobQueue.script
     				"\n" + xml.@reportUrl);
 			}
     			
-    		// logMessage(report.content);
+    		
+    		if (report.title == "Scout Reports" ) {
+				logMessage("Hero @ " + report.targetPos + " - " + xml.scoutReport.scoutInfo.@heroLevel + " " + xml.scoutReport.scoutInfo.@heroName);
+    		}
     	}
     	
     	private var heroStatusStrings:Array = new Array("Idle", "Mayor", "Defend", "March",
@@ -5614,6 +5669,7 @@ package scripts.jobQueue.script
     		obj = new Object(); 
     		obj.col1 = "Gold"; obj.col2 = formatNum(resource.gold); 
     		obj.col3 = formatNum(resource.taxIncome - resource.herosSalary);
+    		obj.col4 = Math.round(-resource.gold / (resource.taxIncome - resource.herosSalary)) + " h";
     		obj.label = "Tax collected: " + formatNum(resource.taxIncome) + 
     					"\nHero salary: " + formatNum(resource.herosSalary) +
     					"\nNet: " + formatNum(resource.taxIncome - resource.herosSalary);
@@ -5625,6 +5681,7 @@ package scripts.jobQueue.script
     		obj = new Object(); 
     		obj.col1 = "Food"; obj.col2 = formatNum(resource.food.amount); 
     		obj.col3 = formatNum(resource.food.increaseRate - resource.troopCostFood);
+			obj.col4 = Math.round(-resource.food.amount / (resource.food.increaseRate - resource.troopCostFood)) + " h"; 
     		obj.label = "Rate: " + formatNum(resource.food.increaseRate) + 
     			"\nTroop food cost: " +formatNum(resource.troopCostFood) +
     			"\nNet: " + formatNum(resource.food.increaseRate - resource.troopCostFood);
@@ -5636,16 +5693,19 @@ package scripts.jobQueue.script
     		obj = new Object(); 
     		obj.col1 = "Lumber"; obj.col2 = formatNum(resource.wood.amount); 
     		obj.col3 = formatNum(resource.wood.increaseRate);
+    		obj.col4 = "";
     		data.addItem(obj);
 
     		obj = new Object(); 
     		obj.col1 = "Stone"; obj.col2 = formatNum(resource.stone.amount); 
     		obj.col3 = formatNum(resource.stone.increaseRate);
+    		obj.col4 = "";
     		data.addItem(obj);
 
     		obj = new Object(); 
     		obj.col1 = "Iron"; obj.col2 = formatNum(resource.iron.amount); 
     		obj.col3 = formatNum(resource.iron.increaseRate);
+    		obj.col4 = "";
     		data.addItem(obj);    		
     	} 
     	
@@ -5662,8 +5722,9 @@ package scripts.jobQueue.script
     			} else {
     				obj.col3 = "Att " + hero.power;
     			}
+    			obj.col4 = hero.experience > hero.upgradeExp
     			obj.label = hero.name + " " + hero.management + "/" + hero.power + "/" + hero.stratagem +
-    				"\nlevel " + hero.level + "\nloyalty " + hero.loyalty + "\nexperience " + hero.experience;
+    				"\nlevel " + hero.level + "\nloyalty " + hero.loyalty + "\nexperience " + hero.experience + "/" + hero.upgradeExp ;
     			if (hero.itemId != null && hero.status == HeroConstants.HERO_SEIZED_STATU) {
     				obj.label += "\nPersuade with: " + hero.itemAmount + " " + Items.getItemName(hero.itemId);
     			}
@@ -5767,6 +5828,21 @@ package scripts.jobQueue.script
 
     			data.addItem(obj);
             }
+    	}
+
+    	public function updateValleyData(data:ArrayCollection) : void {
+    		data.removeAll();
+    		
+    		var obj:Object;
+    		var i:int;
+    		for (i = 0; i < fields.length; i++) {
+    			obj = new Object();
+    			obj.col1 = Map.fieldIdToTypeString(fields[i].id);
+    			obj.col2 = Map.getLevel(fields[i].id);
+    			obj.col3 = Map.fieldIdToCoordString(fields[i].id);
+    			obj.col4 = int(Map.fieldDistance(castle.fieldId, fields[i].id)*100)/100.0;
+	    		data.addItem(obj);
+	    	}
     	}
 
     	public function updateArmyData(data:ArrayCollection) : void {
@@ -5916,10 +5992,12 @@ package scripts.jobQueue.script
 				TFConstants.T_ARCHER, TFConstants.T_LIGHTCAVALRY, TFConstants.T_HEAVYCAVALRY,
 				TFConstants.T_CARRIAGE, TFConstants.T_BALLISTA, TFConstants.T_BATTERINGRAM, 
 				TFConstants.T_CATAPULT);
-
+			
+			
 			var total:TroopBean = getAvailableTroop();
 			var prod:TroopBean = getTroopInProduction();
 			var friendly:TroopBean = getFriendlyTroopBean();
+			var troopingoals:TroopBean = updateTroopRequirements();
 
 			for each(var type:int in types) {
     			var obj:Object = new Object();
@@ -5928,6 +6006,7 @@ package scripts.jobQueue.script
 				obj.col3 = formatNum(total[ troopIntNames[type] ]);
 				obj.col4 = formatNum(prod[ troopIntNames[type] ]);	
 				obj.col5 = formatNum(friendly[ troopIntNames[type] ]);
+				obj.col6 = formatNum(troopingoals[ troopIntNames[type] ]);
 				data.addItem(obj);
 			}   	
    		}    

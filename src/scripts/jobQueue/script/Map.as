@@ -52,6 +52,11 @@ package scripts.jobQueue.script
 				} 
 			}
 		}
+
+		public static function fieldIdToTypeString(fieldId:int) : String {
+			var type:int = getType(fieldId);
+			return (type == -1) ? "" : fieldNames[type];
+		}
 		
 		public static function isMapReady(cx:int, cy:int, r:int) : Boolean {
 			for (var x:int = cx-r; x <= cx+r; x++) {

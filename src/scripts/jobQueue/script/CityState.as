@@ -614,19 +614,19 @@ package scripts.jobQueue.script
 			var traveltime:int
 			var traveltimeacc:int
 			var report:String = "Copy and paste this into the script window\n\n";
-			onCommandResult("Found npcs");
+			onCommandResult("Found " + npcs.length  + " npcs " );
 			for each (var npc2:Object in npcs) {
-				traveltime = cityManager.getAttackTravelTime(castle.fieldId, ToFieldId(npcs.cords), troops) * 2;
+				traveltime = cityManager.getAttackTravelTime( castle.fieldId , ToFieldId(npc2.cords), troops ) * 2;
 				traveltimeacc += traveltime;
 				report += "attack " + npc2.cords 
 				+ " " 
 				+ CallbackParams.autofarmhero 
 				+ " " 
 				+ CallbackParams.autofarmtroops 
-				+ " //Distance: " + int(npc2.distance) 
+				+ " // Distance: " + int(npc2.distance) 
 				+ " Mission time: " + timeToString(traveltime) + "\n";
 			}
-			report += "//Accumulated mission time: " + timeToString(traveltimeacc) + "\n";
+			report += "// Total mission time: " + timeToString(traveltimeacc) + "\n";
 			onCommandResult(report);	  		
 			onCommandResult("Auto farm complete");
 			onCommandFinished(true);

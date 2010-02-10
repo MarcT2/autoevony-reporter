@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:local="*"
-	creationComplete="init()" width="100%" height="100%" borderThickness="0" paddingBottom="0">
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:local="*" creationComplete="init()" width="100%" height="100%" borderThickness="0" paddingBottom="0">
 	<mx:Script>
 		<![CDATA[
 			import com.umge.sovt.common.server.events.ChannelChatMsg;
@@ -93,6 +92,11 @@
 				commandLabel.addEventListener(MouseEvent.ROLL_OVER, label_rollOver);
 				commandLabel.addEventListener(MouseEvent.ROLL_OUT, label_rollOut);
 				
+				clrButton.setStyle('fontSize','10');
+				clrButton.setStyle('fontWeight','normal');
+				clrButton.setStyle("themeColor", 0x000000 );
+				clrButton.setStyle("color", "#000000");									
+
 				mainPanel.addEventListener(MouseEvent.CLICK,
 				function (event:MouseEvent) : void {
 					if (event.target is UITextField) {
@@ -264,6 +268,11 @@
             
 	        private var lastDate:Date = new Date();
 	        private var cache:Array = new Array();
+	        private function clearLogs() : void {
+	        	logs.text = "";
+	        	cache[logs.id] = "";
+	        }
+	        
 	        private function appendToTextArea(textControl:TextArea, message:String) : void
 	        {
 	        	var date:Date = new Date();
@@ -438,20 +447,46 @@
         		}
 	        }
 			
-			private function activateLabel(label:Label) : void {
+			private function activateLabel(label:Button) : void {
 				allianceChatLabel.setStyle('fontSize','10');
+				allianceChatLabel.setStyle('fontWeight','normal');
+				allianceChatLabel.setStyle("themeColor", 0x3333FF );
+				allianceChatLabel.setStyle("color", "#3333FF");					
 				privateChatLabel.setStyle('fontSize','10');
+				privateChatLabel.setStyle('fontWeight','normal');				
+				privateChatLabel.setStyle("themeColor", 0xFF33FF );
+				privateChatLabel.setStyle("color", "#FF33FF");					
 				worldChatLabel.setStyle('fontSize','10');
+				worldChatLabel.setStyle('fontWeight','normal');
+				worldChatLabel.setStyle("themeColor", 0x000000 );
+				worldChatLabel.setStyle("color", "#000000");									
 				commandLabel.setStyle('fontSize','10');
-
-				label.setStyle('fontSize','12');
+				commandLabel.setStyle('fontWeight','normal');
+				commandLabel.setStyle("themeColor", 0x006600 );
+				commandLabel.setStyle("color", "#006600");									
+				
+				if ( label.id == "allianceChatLabel" ) {
+					label.setStyle("themeColor", 0x3333FF );
+					label.setStyle("color", "#3333FF");					
+				} else if ( label.id == "privateChatLabel" ) {
+					label.setStyle("themeColor", 0xFF33FF );
+					label.setStyle("color", "#FF33FF" );
+				} else if ( label.id == "commandLabel" ) {
+					label.setStyle("themeColor", 0x006600 );
+					label.setStyle("color", "#006600" );
+				} else {
+					label.setStyle("themeColor", 0x000000 );
+					label.setStyle("color", "#000000");					
+				}
+				label.setStyle('fontSize','10');
+				label.setStyle('fontWeight','normal');
 			}
 				        
 			private function label_Activate(e:Event) : void
 			{
 				e.currentTarget.setStyle("fontWeight", "normal");
 				if (e.currentTarget is Label) {
-					activateLabel(e.currentTarget as Label);
+					activateLabel(e.currentTarget as Button);
 				}
 			}
 	        
@@ -944,13 +979,12 @@
 	</mx:Script>
 	
 	<mx:Model id="config" source="/config.xml" />
-
 	<mx:VBox width="100%" height="100%" x="0" y="0">
 	<mx:Panel id="mainPanel" title="AutoEvony - http://code.google.com/p/autoevony/wiki/Instruction" height="100%" width="100%" layout="horizontal" borderStyle="solid" borderColor="#090909" >
 
 	<mx:VBox width="100%" height="100%" verticalGap="0" borderStyle="none">
-	<mx:HBox width="100%">
-		<mx:TabBar id="citiesTab" direction="horizontal"  fontSize="10"/>
+	<mx:HBox width="100%" height="30">
+		<mx:TabBar id="citiesTab" direction="horizontal" fontSize="10"/>
 		<mx:HBox width="0" height="100%"></mx:HBox>
 		<mx:Button id="pauseButton" label="Pause" enabled="true" click="pauseQueue()" fontSize="10"/>
 		<mx:Button id="refreshButton" label="Refresh" enabled="true" click="refresh()" fontSize="10"/>
@@ -960,17 +994,21 @@
 	<mx:ViewStack id="citiesViewStack" width="100%" height="50%" ></mx:ViewStack>
 		<mx:HDividedBox width="100%" id="logChatBox" horizontalGap="3" height="50%" borderStyle="solid" borderThickness="0" verticalAlign="bottom">
 			<mx:VBox width="50%" height="100%" verticalGap="0" borderStyle="none" id="vlogs">
-				<mx:Label text="Logs:" width="100%" height="22" fontSize="12"/>
+				<mx:HBox width="100%" height="20">
+					<mx:Label text="Logs:" width="90%" height="20" fontSize="11"/>
+					<mx:Button label="Clear" id="clrButton" click="clearLogs()" height="20"/>
+				</mx:HBox>
 				<mx:TextArea width="100%" id="logs" height="100%" wordWrap="true" editable="false" enabled="true"/>
 			</mx:VBox>
 			<mx:VBox width="50%" height="100%" verticalGap="0" borderStyle="none" id="vchatbox">
 				<mx:VDividedBox height="100%" width="100%" verticalGap="2">
 					<mx:VBox height="100%" width="100%">
-						<mx:HBox width="100%" height="16">
-							<mx:Label text="Alliance Chat" width="90" height="16" click="chatStack.selectedChild=aChatCanv;" id="allianceChatLabel"/>
-							<mx:Label text="Private Chat" width="90" height="16" click="chatStack.selectedChild=pChatCanv;" id="privateChatLabel"/>
-							<mx:Label text="World Chat" width="90" height="16" click="chatStack.selectedChild=wChatCanv;" id="worldChatLabel"/>
-							<mx:Label text="Commands" width="90" height="16" click="chatStack.selectedChild=commandCanv;" id="commandLabel"/>
+						<mx:HBox width="100%" height="20">
+							<mx:Label text="Chat: " height="20" fontSize="11"/>
+							<mx:Button label="Alliance"  height="20" click="chatStack.selectedChild=aChatCanv;" id="allianceChatLabel"/>
+							<mx:Button label="Private" height="20" click="chatStack.selectedChild=pChatCanv;" id="privateChatLabel"/>
+							<mx:Button label="World" height="20" click="chatStack.selectedChild=wChatCanv;" id="worldChatLabel"/>
+							<mx:Button label="Commands" height="20" click="chatStack.selectedChild=commandCanv;" id="commandLabel"/>
 						</mx:HBox>
 						<mx:ViewStack id="chatStack" width="100%" height="100%" creationPolicy="all">
 							<mx:Canvas id="aChatCanv" width="100%" height="100%" label="Alliance Chat">
@@ -980,7 +1018,7 @@
 								<mx:TextArea id="pChatText" width="100%" height="100%" wordWrap="true" editable="false" enabled="true" color="#6A44AF" right="0" bottom="0"/>
 							</mx:Canvas>
 							<mx:Canvas id="wChatCanv" width="100%" height="100%" label="World Chat">
-								<mx:TextArea id="wChatText" width="100%" height="100%" wordWrap="true" editable="false" enabled="true" color="#555555" right="0" bottom="0"/>
+								<mx:TextArea id="wChatText" width="100%" height="100%" wordWrap="true" editable="false" enabled="true" color="#222222" right="0" bottom="0"/>
 							</mx:Canvas>
 							<mx:Canvas id="commandCanv" width="100%" height="100%" label="Commands">
 								<mx:TextArea id="commandText" width="100%" height="100%" wordWrap="true" editable="false" enabled="true" color="#096E6D" right="0" bottom="0"/>
@@ -998,7 +1036,7 @@
 	</mx:VBox>
 	
 	</mx:Panel>
-	<mx:Label text="Build {Version.build_number}, compiled on {Version.build_time} using Evony version {Version.GAMECLIENTVERSION}" />
+	<mx:Label bottom="10" text="Build {Version.build_number}, compiled on {Version.build_time} using Evony version {Version.GAMECLIENTVERSION}" />
 	</mx:VBox>
 </mx:Module>
 
