@@ -15,11 +15,11 @@
 			
 			[Bindable] private var infoData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var resourceData:ArrayCollection = new ArrayCollection;
+			[Bindable] private var valleyData:ArrayCollection = new ArrayCollection;			
 			[Bindable] private var buildingData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var researchData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var heroData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var armyData:ArrayCollection = new ArrayCollection;
-			[Bindable] private var valleyData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var extraTroopData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var troopsData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var fortificationsData:ArrayCollection = new ArrayCollection;
@@ -66,6 +66,9 @@
 	        	if (obj == null || allinfo.selectedChild == resource) {
 	        		city.cityManager.updateResourceData(resourceData);
 	        	}
+	        	if (obj == null || allinfo.selectedChild == valley) {
+	        		city.cityManager.updateValleyData(valleyData);
+				}	        		        	
 	        	if (obj == null || allinfo.selectedChild == heroes) {
 	        		city.cityManager.updateHeroData(heroData);
 	        	}
@@ -78,9 +81,6 @@
 	        	if (obj == null || allinfo.selectedChild == armies) {
 	        		city.cityManager.updateArmyData(armyData);
 	        	}
-	        	if (obj == null || allinfo.selectedChild == valley) {
-	        		city.cityManager.updateValleyData(valleyData);
-				}	        	
 	        	if (obj == null || allinfo.selectedChild == troops) {
 	        		city.cityManager.updateTroopData(troopsData);
 	        	}
@@ -190,6 +190,7 @@
 			private function setGoals() : void {
 				city.cityManager.setGoals(goalsTextArea.text);
 			}			
+			
 		]]>
 	</mx:Script>
 
@@ -260,6 +261,19 @@
 						</mx:columns>
 					</mx:DataGrid>
 				</mx:Canvas>
+				<mx:Canvas label="V" width="100%" height="100%" id="valley">
+					<mx:DataGrid dataProvider="{valleyData}" width="100%" height="100%" allowMultipleSelection="false"
+						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 
+						showHeaders="true" sortableColumns="false" visible="true" allowDragSelection="false" draggableColumns="false" enabled="true" 
+						selectable="false" horizontalScrollPolicy="off" variableRowHeight="true" minHeight="30" rowHeight="16">
+						<mx:columns>
+							<mx:DataGridColumn headerText="Valley" dataField="col1" width="0.3"/>
+							<mx:DataGridColumn headerText="Level" dataField="col2" width="0.1"/>
+							<mx:DataGridColumn headerText="Coords" dataField="col3" width="0.1"/>
+							<mx:DataGridColumn headerText="Distance" dataField="col4" width="0.1"/>
+						</mx:columns>
+					</mx:DataGrid>
+				</mx:Canvas>							
 				<mx:Canvas label="H" width="100%" height="100%" id="heroes">
 					<mx:DataGrid dataProvider="{heroData}" width="100%" height="100%" allowMultipleSelection="false"
 						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 
@@ -496,12 +510,114 @@
 						showHeaders="true" sortableColumns="false" visible="true" allowDragSelection="false" draggableColumns="false" enabled="true" 
 						selectable="false" horizontalScrollPolicy="off" variableRowHeight="true" minHeight="30" rowHeight="16">
 						<mx:columns>
-							<mx:DataGridColumn headerText="Troop" dataField="col1" width="0.20"/>
-							<mx:DataGridColumn headerText="Available" dataField="col2" width="0.15"/>
-							<mx:DataGridColumn headerText="Total" dataField="col3" width="0.15"/>
-							<mx:DataGridColumn headerText="In Queues" dataField="col4" width="0.15"/>
-							<mx:DataGridColumn headerText="Goals" dataField="col6" width="0.15"/>
-							<mx:DataGridColumn headerText="Reinforce" dataField="col5" width="0.15"/>
+							<mx:DataGridColumn headerText="Troop" dataField="col1" width="0.18"/>
+							<mx:DataGridColumn headerText="Availible" dataField="col2" width="0.12"/>
+							<mx:DataGridColumn headerText="Total" dataField="col3" width="0.12" >
+					  		<mx:itemRenderer>
+    							<mx:Component>
+      								<mx:VBox verticalGap="0">
+										<mx:Script>
+    	                	    		<![CDATA[
+        	                	    		override public function set data( value:Object ) : void {
+            	                	    		super.data = value;            	                	    		
+								   				if ( data.col6 > 0 ) {
+     												setStyle("backgroundColor",0xFFDDDD);
+   												} else {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+   												if (data.col7 == "0") {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+                            				}	
+                        				]]>
+                        				</mx:Script>      							
+        								<mx:Label text="{data.col3}" />
+	      							</mx:VBox>
+    							</mx:Component>
+  							</mx:itemRenderer>
+							</mx:DataGridColumn>									
+							<mx:DataGridColumn headerText="Queued" dataField="col4" width="0.12" >
+					  		<mx:itemRenderer>
+    							<mx:Component>
+      								<mx:VBox verticalGap="0">
+										<mx:Script>
+    	                	    		<![CDATA[
+        	                	    		override public function set data( value:Object ) : void {
+            	                	    		super.data = value;
+								   				if ( data.col6 > 0 ) {
+     												setStyle("backgroundColor",0xFFDDDD);
+   												} else {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+   												if (data.col7 == "0") {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+                            				}	
+                        				]]>
+                        				</mx:Script>      							
+        								<mx:Label text="{data.col4}" />
+	      							</mx:VBox>
+    							</mx:Component>
+  							</mx:itemRenderer>
+							</mx:DataGridColumn>								
+							<mx:DataGridColumn headerText="Goal" dataField="col6" width="0.12" >
+					  		<mx:itemRenderer>
+    							<mx:Component>
+      								<mx:VBox verticalGap="0">
+										<mx:Script>
+    	                	    		<![CDATA[
+        	                	    		override public function set data( value:Object ) : void {
+            	                	    		super.data = value;
+								   				if ( data.col6 > 0 ) {
+     												setStyle("backgroundColor",0xFFDDDD);
+   												} else {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+   												if (data.col7 == "0") {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+                            				}                            					
+                        				]]>
+                        				</mx:Script>      							
+        								<mx:Label text="{data.col7}" />
+	      							</mx:VBox>
+    							</mx:Component>
+  							</mx:itemRenderer>
+							</mx:DataGridColumn>				
+							<mx:DataGridColumn headerText="Remain" dataField="col6" width="0.12" >
+					  		<mx:itemRenderer>
+    							<mx:Component>
+      								<mx:VBox verticalGap="0">
+										<mx:Script>
+    	                	    		<![CDATA[
+        	                	    		override public function set data( value:Object ) : void {
+            	                	    		super.data = value;
+								   				if ( data.col6 > 0 ) {
+     												setStyle("backgroundColor",0xFFDDDD);
+   												} else {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+   												if (data.col7 == "0") {
+     												setStyle("backgroundColor",0xDDFFDD);
+                            					}
+                            				}
+											public function formatNum(num:Number) : String {
+												if (num < 0) return "0";				
+												if (num < 1000) return "" + num;
+												if (num < 10000) return "" + int(num/100) / 10 + "k";
+												if (num < 1000000) return "" + int(num/1000) + "k";
+												if (num < 10000000) return "" + int(num/100000) / 10 + "m";
+												return "" + int(num/1000000) + "m";
+											}
+                            					
+                        				]]>
+                        				</mx:Script>      							
+        								<mx:Label text="{formatNum(data.col6)}" />
+	      							</mx:VBox>
+    							</mx:Component>
+  							</mx:itemRenderer>
+							</mx:DataGridColumn>
+							<mx:DataGridColumn headerText="Reinforce" dataField="col5" width="0.12"/>
 						</mx:columns>
 					</mx:DataGrid>	
 				</mx:Canvas>
@@ -516,20 +632,7 @@
 							<mx:DataGridColumn headerText="In Queues" dataField="col3" width="0.25"/>
 						</mx:columns>
 					</mx:DataGrid>	
-				</mx:Canvas>
-				<mx:Canvas label="V" width="100%" height="100%" id="valley">
-					<mx:DataGrid dataProvider="{valleyData}" width="100%" height="100%" allowMultipleSelection="false"
-						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 
-						showHeaders="true" sortableColumns="false" visible="true" allowDragSelection="false" draggableColumns="false" enabled="true" 
-						selectable="false" horizontalScrollPolicy="off" variableRowHeight="true" minHeight="30" rowHeight="16">
-						<mx:columns>
-							<mx:DataGridColumn headerText="Valley" dataField="col1" width="0.3"/>
-							<mx:DataGridColumn headerText="Level" dataField="col2" width="0.1"/>
-							<mx:DataGridColumn headerText="Coords" dataField="col3" width="0.1"/>
-							<mx:DataGridColumn headerText="Distance" dataField="col4" width="0.1"/>
-						</mx:columns>
-					</mx:DataGrid>
-				</mx:Canvas>				
+				</mx:Canvas>	
 				<mx:Canvas label="X" width="100%" height="100%" id="trade">
 					<mx:DataGrid dataProvider="{tradesData}" width="100%" height="100%" allowMultipleSelection="false"
 						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 

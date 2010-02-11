@@ -285,8 +285,8 @@ package {
 				}
 
 				if (m_connectAttempts == MAXQUICKATTEMPTS+1) {
-					m_reconnectTimer.delay = Utils.rand(8*60*1000, 15*60*1000); // 8-15 min
-					dispatchEvent(new ScriptLogEvent("Too many failed reconnections"));
+					m_reconnectTimer.delay = Utils.rand(8*60*1000, 10*60*1000); // 8-10 min
+					dispatchEvent(new ScriptLogEvent("Too many failed reconnections, next retry in " + Utils.formatTime(m_reconnectTimer.delay/1000)));
 				}
 			}
 		}

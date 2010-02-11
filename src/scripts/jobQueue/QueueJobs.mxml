@@ -410,6 +410,10 @@
 				pauseButton.label = conn.paused ? "Resume" : "Pause";
 				var date:Date = new Date();
 	        	logMessage(conn.paused ? "Pausing jobs" : "Resuming jobs");
+				if (!conn.paused && !conn.m_authenticated) {
+ 		        		conn.m_reconnectTimer.stop();
+ 		        		conn.connect();
+				}	        	
 	        }
 
 	        private function refresh() : void {

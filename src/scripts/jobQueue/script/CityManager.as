@@ -1403,12 +1403,18 @@ package scripts.jobQueue.script
 			if (!needResourceNow && trade.price >= sellPrice(trade.resType) && amount < remain*2) return;			
 
 			var newPrice:Number = sellPrice(trade.resType) * 0.9 + buyPrice(trade.resType) * 0.1;
-			newPrice = int(newPrice*1000) / 1000;
+			if (newPrice >= 10) {
+ 				newPrice = int(newPrice*100) / 100;
+ 			} else {
+ 				newPrice = int(newPrice*1000) / 1000;
+			}
 			
 			// don't try to optimize too much with price
 			if (needResourceNow ||  buyPrice(trade.resType) < 1.02 * sellPrice(trade.resType)) newPrice = buyPrice(trade.resType);
 			
 			var newAmount:Number = Math.min(remain+amount, (resource.gold+remain*trade.price) / 1.005 / newPrice);
+			
+			if (!needResourceNow && newPrice > trade.price * 1.2 && !cityTimingAllowed("priceswing", 900)) return;
 			
 			logMessage("Modify buy " + resourceNames[trade.resType] + " from " + remain + "@" + trade.price + " to " + newAmount + "@" + newPrice + ", range: " + sellPrice(trade.resType) + "-" + buyPrice(trade.resType));
 			ActionFactory.getInstance().getTradeCommands().cancelTrade(castle.id, trade.id);
@@ -1424,13 +1430,18 @@ package scripts.jobQueue.script
 			if (!needGoldNow && trade.price <= buyPrice(trade.resType) && amount < remain*2) return;
 			
 			var newPrice:Number = sellPrice(trade.resType) * 0.1 + buyPrice(trade.resType) * 0.9;
-			newPrice = int(newPrice*1000) / 1000;
+			if (newPrice >= 10) {
+ 				newPrice = int(newPrice*100) / 100;
+ 			} else {
+ 				newPrice = int(newPrice*1000) / 1000;
+			}
 			
 			// don't try to optimize too much with price
 			if (needGoldNow || buyPrice(trade.resType) < 1.02 * sellPrice(trade.resType)) newPrice = sellPrice(trade.resType);
 
 			// is there enough money to cover the modification
 			if (resource.gold < 0.005 * newPrice * (remain + amount)) return;
+			if (!needGoldNow && newPrice < trade.price * 0.8 && !cityTimingAllowed("priceswing", 900)) return;
 			
 			logMessage("Modify sell " + resourceNames[trade.resType] + " from " + remain + "@" + trade.price + " to " + (remain+amount) + "@" + newPrice + ", range: " + sellPrice(trade.resType) + "-" + buyPrice(trade.resType));
 			ActionFactory.getInstance().getTradeCommands().cancelTrade(castle.id, trade.id);
@@ -1632,7 +1643,7 @@ package scripts.jobQueue.script
 				factors[TradeConstants.RES_TYPE_WOOD]*sellPrice(TradeConstants.RES_TYPE_WOOD) +
 				factors[TradeConstants.RES_TYPE_STONE]*buyPrice(TradeConstants.RES_TYPE_STONE) +
 				factors[TradeConstants.RES_TYPE_IRON]*buyPrice(TradeConstants.RES_TYPE_IRON);
-
+			var batchSize:int = Utils.rand(2000, 4000) * 1000;
 			// limit for resource buying
 			var resourceLimits:Array = new Array(reserved.food * 1000, 32000000, 16000000, 16000000);
 			var randOrder:Array = Utils.randOrder(4);
@@ -1646,14 +1657,14 @@ package scripts.jobQueue.script
 					var sellAmount:Number = Math.min(resource.gold/sellPrice(res)*100, (nSellResource[res]-desired)*1.2, nCurrResource[res]*.9, sellAmount(res));
 					sellAmount = int(sellAmount / 100) * 100;
 					if (sellAmount < 0) continue;
-					if (sellAmount > 2000000) sellAmount = 2000000;
+					if (sellAmount > batchSize) sellAmount = batchSize;
 					doSell(sellAmount, res, desperate);
 					return;
 				} else if (nResource[res] < resourceLimits[res] && desired > Math.min(nResource[res] * 1.2, nResource[res] + 1000000) && resource.gold > 1000) { // buy
 					var buyAmount:Number = Math.min((resource.gold-goldDesired-reserved.gold)/buyPrice(res)*0.99, (desired-nResource[res])*1.2, buyAmount(res));
 					buyAmount = int(buyAmount / 100) * 100;
 					if (buyAmount <= 0) continue;
-					if (buyAmount > 2000000) buyAmount = 2000000;
+					if (buyAmount > batchSize) buyAmount = batchSize;
 					doBuy(buyAmount, res, desperate);
 					return;
 				}
@@ -2233,6 +2244,10 @@ package scripts.jobQueue.script
 					return;
 				}
 			}
+			
+			if (heroUpdateNeeded && getConfig(CONFIG_FASTHERO) > 0 && masterTimer.canSend(timeSlot)) {
+ 				ActionFactory.getInstance().getHeroCommand().getHerosListFromTavern(castle.id);
+			}			
 		}
 		
 		private function attemptToHire(hero:HeroBean) : Boolean {
@@ -4563,7 +4578,7 @@ package scripts.jobQueue.script
 		private function getEvasionEndTime() : Number  {
 			if (enemyArmies.length == 0) return 0;		// shouldn't happen
 			for (var i:int = 0; i < enemyArmies.length - 1; i++) {
-				if (enemyArmies[i].reachTime + 5*60*1000 < enemyArmies[i+1].reachTime) {
+				if (enemyArmies[i].reachTime + 60*1000 < enemyArmies[i+1].reachTime) {
 					return enemyArmies[i].reachTime;
 				}
 			}
@@ -4578,7 +4593,7 @@ package scripts.jobQueue.script
 			var rsLevel:int = getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD);
 			
 			if (troop.carriage <= 1) return false;			// don't bother
-			
+			if (handleAttackNPCForTrainingOrResource()) return true;
 			
 			// if (handleAttackNPCForResource()) return true;
 
@@ -4601,12 +4616,12 @@ package scripts.jobQueue.script
 			
 			// horses are terrible at defense
 			if (troop.heavyCavalry > 0) {
-				newArmy.troops.heavyCavalry = (troop.heavyCavalry >= 200) ? troop.heavyCavalry - 100 : (troop.heavyCavalry >= 20) ? troop.heavyCavalry - 10 : troop.heavyCavalry - 1;
+				newArmy.troops.heavyCavalry = (troop.heavyCavalry >= 20) ? troop.heavyCavalry - 10 : troop.heavyCavalry - 1;
 				newArmy.troops.heavyCavalry = Math.min(newArmy.troops.heavyCavalry, rsLevel * 10000 - newArmy.troops.carriage - newArmy.troops.ballista);
 			}
 
 			if (troop.lightCavalry > 0) {
-				newArmy.troops.lightCavalry = (troop.lightCavalry >= 200) ? troop.lightCavalry - 100 : (troop.lightCavalry >= 20) ? troop.lightCavalry - 10 : troop.lightCavalry - 1;
+				newArmy.troops.lightCavalry = (troop.lightCavalry >= 20) ? troop.lightCavalry - 10 : troop.lightCavalry - 1;
 				newArmy.troops.lightCavalry = Math.min(newArmy.troops.lightCavalry, rsLevel * 10000 - newArmy.troops.carriage - newArmy.troops.ballista - newArmy.troops.heavyCavalry);
 			}
 
@@ -4628,6 +4643,7 @@ package scripts.jobQueue.script
 			var hero:HeroBean = bestIdleAttackHeroExcept(avoidedHero);
 			
 			if (hero == null) {
+				if (cityTimingAllowed("noherowarning", 60))
 				logMessage("No hero to lead evasion troop");
 				return false;
 			}
@@ -4928,24 +4944,14 @@ package scripts.jobQueue.script
 				
 		public function loyaltyattack(fieldId:int, numCav:int, capture:Boolean) : void {
 			if (loyaltyAttackFieldId != -1) {
-				if (loyaltyAttackFieldId == fieldId) {
-					logMessage("Update loyalty attack on " + Map.fieldIdToString(fieldId));
-					loyaltyAttackFieldId = fieldId;
-					loyaltyAttackNumCav = numCav;
-					loyaltyAttackOnly = !capture;
-				} else if (castle.fieldId == fieldId) {		// this is really a hack...
-					logMessage("Update loyalty attack on " + Map.fieldIdToString(loyaltyAttackFieldId));
-					loyaltyAttackNumCav = numCav;
-					loyaltyAttackOnly = !capture;
-				} else {
-					logMessage("Please cancel loyalty attack on " + Map.fieldIdToString(loyaltyAttackFieldId) + " first");
-				}
+				logMessage("Update loyalty attack on " + Map.fieldIdToString(fieldId));
 			} else {		
 				logMessage("Start loyalty attack on " + Map.fieldIdToString(fieldId));
-				loyaltyAttackFieldId = fieldId;
-				loyaltyAttackNumCav = numCav;
-				loyaltyAttackOnly = !capture;
-			}	
+			}
+			loyaltyAttackFieldId = fieldId;
+			loyaltyAttackNumCav = numCav;
+			loyaltyAttackOnly = !capture;
+
 		}
 		
 		public function tagNpc(fieldId:int, npc:Boolean) : void {
@@ -5314,7 +5320,7 @@ package scripts.jobQueue.script
 			lastNewReport = response;
 			
 			if (response.army_count > 0) {
-				if (!playerTimingAllowed("getarmyreportlist", 5)) return;
+				if (!playerTimingAllowed("getarmyreportlist", 2)) return;
 				ActionFactory.getInstance().getReportCommands().receiveReportList(1,5,ObjConstants.REPORT_TYPE_ARMY);
 				lastNewReport = null;
 				return;
@@ -5709,6 +5715,21 @@ package scripts.jobQueue.script
     		data.addItem(obj);    		
     	} 
     	
+    	public function updateValleyData(data:ArrayCollection) : void {
+    		data.removeAll();
+    		
+    		var obj:Object;
+    		var i:int;
+    		for (i = 0; i < fields.length; i++) {
+    			obj = new Object();
+    			obj.col1 = Map.fieldIdToTypeString(fields[i].id);
+    			obj.col2 = Map.getLevel(fields[i].id);
+    			obj.col3 = Map.fieldIdToCoordString(fields[i].id);
+    			obj.col4 = int(Map.fieldDistance(castle.fieldId, fields[i].id)*100)/100.0;
+	    		data.addItem(obj);
+	    	}
+    	}
+    	
     	public function updateHeroData(data:ArrayCollection) : void {
     		data.removeAll();
     		for each(var hero:HeroBean in heroes) {
@@ -5828,21 +5849,6 @@ package scripts.jobQueue.script
 
     			data.addItem(obj);
             }
-    	}
-
-    	public function updateValleyData(data:ArrayCollection) : void {
-    		data.removeAll();
-    		
-    		var obj:Object;
-    		var i:int;
-    		for (i = 0; i < fields.length; i++) {
-    			obj = new Object();
-    			obj.col1 = Map.fieldIdToTypeString(fields[i].id);
-    			obj.col2 = Map.getLevel(fields[i].id);
-    			obj.col3 = Map.fieldIdToCoordString(fields[i].id);
-    			obj.col4 = int(Map.fieldDistance(castle.fieldId, fields[i].id)*100)/100.0;
-	    		data.addItem(obj);
-	    	}
     	}
 
     	public function updateArmyData(data:ArrayCollection) : void {
@@ -6006,7 +6012,8 @@ package scripts.jobQueue.script
 				obj.col3 = formatNum(total[ troopIntNames[type] ]);
 				obj.col4 = formatNum(prod[ troopIntNames[type] ]);	
 				obj.col5 = formatNum(friendly[ troopIntNames[type] ]);
-				obj.col6 = formatNum(troopingoals[ troopIntNames[type] ]);
+				obj.col6 = troopingoals[ troopIntNames[type] ] - (total[ troopIntNames[type] ] + prod[ troopIntNames[type] ]);				
+				obj.col7 = formatNum(troopingoals[ troopIntNames[type] ]); 
 				data.addItem(obj);
 			}   	
    		}    
