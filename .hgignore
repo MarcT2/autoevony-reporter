@@ -2,9 +2,4 @@ syntax: regexp
 ^bin-debug$
 syntax: regexp
 ^bin-release$
-syntax: regexp
-^build\.number$
-syntax: regexp
-^src/Version\.as$
-^src/com/umge/
 glob:Desktop.ini

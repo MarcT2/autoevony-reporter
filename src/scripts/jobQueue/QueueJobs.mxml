@@ -384,7 +384,7 @@
 						if (CityManager.isJunkTroop(army.troop)) continue;
 						city = army.targetPosName;
 			        	var sName:String = city;
-			        	if (sName.length > 3) sName = sName.substring(0, 3);
+			        	if (sName.length > 5) sName = sName.substring(0, 5);
 			        	sName = sName + "(" + Map.getX(army.targetFieldId) + "," + Map.getY(army.targetFieldId) + ")";
 
 			    		for each (var t1:Object in citiesTab.getChildren())

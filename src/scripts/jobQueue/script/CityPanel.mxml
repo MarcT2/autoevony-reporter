@@ -111,7 +111,7 @@
 			}
 			
 			private function initextraTextArea(obj:Object = null) : void {
-				if (scriptTextArea == null) {
+				if (extraTextArea == null) {
 					callLater(initextraTextArea);
 				} else {
 					var extraCache:SharedObject = SharedObject.getLocal("cityextra"+city.castle.id);				
