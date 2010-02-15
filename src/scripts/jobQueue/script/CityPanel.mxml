@@ -257,7 +257,7 @@
 							<mx:DataGridColumn headerText="Resource" dataField="col1" width="0.25" showDataTips="true"/>
 							<mx:DataGridColumn headerText="Amount" dataField="col2" width="0.25" showDataTips="true"/>
 							<mx:DataGridColumn headerText="Rate" dataField="col3" width="0.25" showDataTips="true"/>
-							<mx:DataGridColumn headerText="Empty" dataField="col4" width="0.25" showDataTips="true"/>
+							<mx:DataGridColumn headerText="Empty In" dataField="col4" width="0.25" showDataTips="true"/>
 						</mx:columns>
 					</mx:DataGrid>
 				</mx:Canvas>
