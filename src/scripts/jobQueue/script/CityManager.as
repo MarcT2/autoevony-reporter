@@ -44,6 +44,7 @@ package scripts.jobQueue.script {
 		private static var CONFIG_VALLEY:String = "valley";
 		private static var CONFIG_HUNTING:String = "hunting";
 		private static var CONFIG_HERO:String = "hero";
+		private static var CONFIG_NPC10HERO:String = "npc10hero";
 		private static var CONFIG_HIDING:String = "hiding";
 		private static var CONFIG_GATE:String = "gate";
 		private static var CONFIG_BUILDNPC:String = "buildnpc";
@@ -441,7 +442,7 @@ package scripts.jobQueue.script {
 				CONFIG_NPC, CONFIG_NPCLIMIT, CONFIG_COMFORT, CONFIG_RESEARCH, CONFIG_BUILDING, CONFIG_TRADING,
 				CONFIG_FORTIFICATION, CONFIG_TROOP, CONFIG_HERO, CONFIG_HUNTING, CONFIG_HIDING, CONFIG_STATUS, 
 				CONFIG_BUILDNPC, CONFIG_DEBUG, CONFIG_VALLEY, CONFIG_DUMPING, CONFIG_TRAINING, CONFIG_FASTHERO,
-				CONFIG_ABANDON, CONFIG_GATE, CONFIG_WARREPORT,CONFIG_DOFARM10 ,CONFIG_BUILD10);
+				CONFIG_ABANDON, CONFIG_GATE, CONFIG_WARREPORT, CONFIG_NPC10HERO , CONFIG_DOFARM10 ,CONFIG_BUILD10);
 			if (str == null) {
 				logError("Empty config, available: " + configNames.join(" "));
 				return false;
@@ -459,11 +460,19 @@ package scripts.jobQueue.script {
 			}
 			
 			// double check and warn regarding abandon
+			if (configs[CONFIG_NPC10HERO] < 100) {
+				logError("YOU WILL LOSE A CRAPLOAD OF TROOPS FARMING LVL10 NPC'S : AUTOFARM 10 DISABLED");
+				configs[CONFIG_NPC10HERO] = 0;
+				configs[CONFIG_DOFARM10] = 0;
+			}
+			if (configs[CONFIG_NPC10HERO] < 200 && configs[CONFIG_NPC10HERO] >= 100) {
+				logError("YOU WILL LOSE MAJOR TROOPS FARMING LVL10 NPC'S : I WARNED YOU!!!");
+			}
 			if (configs[CONFIG_ABANDON] > 0) {
 				var count:int = 0;
 				for each(var key:String in configs) count++;
 				if (count != 1) {
-					logError("ABANDON should be used alone without any other config setting, disable ABANDON");
+					logError("ABANDON should be used alone without any other config setting: ABANDON disabled");
 					configs[CONFIG_ABANDON] = 0;
 				} else {
 					logMessage("Preparing town for abandonment.  Lower loyalty to 0 and destroy defenses!!!");
@@ -4445,8 +4454,8 @@ package scripts.jobQueue.script {
 			
 			var minLevel:int = 10;
 			var maxLevel:int = 10;
-			logMessage("checking for a attack hero > 200: " + hero.power );
-			if (hero.power < 200) {				
+			logMessage("checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
+			if (hero.power < configs[CONFIG_NPC10HERO] ) {				
 				return false;
 			} 
 			
