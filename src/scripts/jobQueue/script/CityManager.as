@@ -6264,7 +6264,7 @@ package scripts.jobQueue.script {
 			for each(var fieldid:int in localNPCs ) {
 				fieldid = localNPCs[ x ].toString();
     			var obj:Object = new Object();
-				obj.col1 = Map.fieldIdToCoordString(fieldid);
+				obj.col1 = Map.fieldIdToCoordString( fieldid );
 				obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
 				data.addItem(obj);			
 				x = x + 1
@@ -6277,7 +6277,7 @@ package scripts.jobQueue.script {
 			for each(var fieldid:int in localNPCs ) {
 				fieldid = localNPC10s[ x ].toString();
     			var obj:Object = new Object();
-				obj.col1 = Map.fieldIdToCoordString(fieldid);
+				obj.col1 = Map.fieldIdToCoordString( fieldid );
 				obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
 				data.addItem(obj);			
 				x = x + 1
