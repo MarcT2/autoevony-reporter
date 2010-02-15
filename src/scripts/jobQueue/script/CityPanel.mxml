@@ -16,7 +16,7 @@
 			[Bindable] private var infoData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var resourceData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var valleyData:ArrayCollection = new ArrayCollection;			
-			[Bindable] private var buildingData:ArrayCollection = new ArrayCollection;
+			[Bindable] private var buildingData:ArrayCollection = new ArrayCollection;			
 			[Bindable] private var researchData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var heroData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var armyData:ArrayCollection = new ArrayCollection;
@@ -24,6 +24,8 @@
 			[Bindable] private var troopsData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var fortificationsData:ArrayCollection = new ArrayCollection;
 			[Bindable] private var tradesData:ArrayCollection = new ArrayCollection;
+			[Bindable] private var npc5data:ArrayCollection = new ArrayCollection;
+			[Bindable] private var npc10data:ArrayCollection = new ArrayCollection;
 			
 			public function init(queueJobs:QueueJobs, city:CityState) : void {
 	        	this.queueJobs = queueJobs;
@@ -92,6 +94,12 @@
 	        	}
 	        	if (obj == null || allinfo.selectedChild == extra) {
 	        		city.cityManager.updateExtraTroopData(extraTroopData);
+	        	}
+	        	if (obj == null || allinfo.selectedChild == npc5) {
+	        		city.cityManager.updateNPC5Data(npc5data);
+	        	}
+	        	if (obj == null || allinfo.selectedChild == npc10) {
+	        		city.cityManager.updateNPC10Data(npc10data);
 	        	}
 	        }
 			
@@ -231,7 +239,7 @@
 				</mx:Canvas>
 			</mx:ViewStack>
 		</mx:VBox>
-		<mx:VBox backgroundColor="0xCCCC99" width="500" height="100%" verticalGap="0">
+		<mx:VBox backgroundColor="0xCCCC99" width="550" height="100%" verticalGap="0">
 			<mx:HBox width="100%" height="20">
 				<mx:TabBar backgroundColor="0xFFFF99" dataProvider="allinfo">
 				</mx:TabBar>
@@ -655,6 +663,28 @@
 							<mx:DataGridColumn headerText="Extra troops" dataField="col1" width="0.20"/>
 							<mx:DataGridColumn headerText="From" dataField="col2" width="0.40" showDataTips="true"/>
 							<mx:DataGridColumn headerText="Remain time" dataField="col3" width="0.20"/>
+						</mx:columns>
+					</mx:DataGrid>	
+				</mx:Canvas>
+				<mx:Canvas label="5" width="100%" height="100%" id="npc5">
+					<mx:DataGrid dataProvider="{npc5data}" width="100%" height="100%" allowMultipleSelection="false"
+						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 
+						showHeaders="true" sortableColumns="false" visible="true" allowDragSelection="false" draggableColumns="false" enabled="true" 
+						selectable="false" horizontalScrollPolicy="off" variableRowHeight="true" minHeight="30" rowHeight="16">
+						<mx:columns>
+							<mx:DataGridColumn headerText="Location" dataField="col1" width="0.20"/>
+							<mx:DataGridColumn headerText="Distance" dataField="col2" width="0.20"/>
+						</mx:columns>
+					</mx:DataGrid>	
+				</mx:Canvas>
+				<mx:Canvas label="10" width="100%" height="100%" id="npc10">
+					<mx:DataGrid dataProvider="{npc10data}" width="100%" height="100%" allowMultipleSelection="false"
+						doubleClickEnabled="false" dragEnabled="false" editable="false" resizableColumns="true" wordWrap="false" 
+						showHeaders="true" sortableColumns="false" visible="true" allowDragSelection="false" draggableColumns="false" enabled="true" 
+						selectable="false" horizontalScrollPolicy="off" variableRowHeight="true" minHeight="30" rowHeight="16">
+						<mx:columns>
+							<mx:DataGridColumn headerText="Location" dataField="col1" width="0.20"/>
+							<mx:DataGridColumn headerText="Distance" dataField="col2" width="0.20"/>
 						</mx:columns>
 					</mx:DataGrid>	
 				</mx:Canvas>

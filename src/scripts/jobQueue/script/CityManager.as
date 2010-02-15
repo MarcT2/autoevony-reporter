@@ -624,8 +624,9 @@ package scripts.jobQueue.script {
 			var ready:Boolean = marketReady();
 			
 			if (!attacked && buildCityLocation != -1 && castle.fieldId == buildCityFrom) attacked = handleBuildCity();
+			
 			if (!attacked && getConfig(CONFIG_BUILDNPC) > 0) attacked = handleBuildNPC();
-			if (!attacked && getConfig(CONFIG_BUILD10) > 0) attacked = handleBuildNPC10();			
+						
 			if (ready && !attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForResource();
 			if (ready && !attacked && getConfig(CONFIG_DOFARM10) > 0 ) {
 				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
@@ -4042,7 +4043,7 @@ package scripts.jobQueue.script {
 			// if a flat is currently owned
 			var flat5:FieldBean = null;
 			for each (var field:FieldBean in fields) {
-				if (field.type == FieldConstants.TYPE_FLAT && field.level == 5) {
+				if (field.type == FieldConstants.TYPE_FLAT && ( field.level == 5 || field.level == 10 )) {
 					if (getArmyWithResourceHeadingTo(field.id) != null) continue;
 					flat5 = field;
 					break;
@@ -4055,19 +4056,25 @@ package scripts.jobQueue.script {
 			}
 
 			// checking condition for sending troop
-			if (countFlat5FieldsUnderAttack() > 0) return false;
-			if (flat5FieldsDetailInfo == null || flat5FieldsDetailInfo.length == 0) return false;	
+			if (countFlat5FieldsUnderAttack() > 0 && countFlat10FieldsUnderAttack() > 0 ) return false;
+			if ((flat5FieldsDetailInfo == null || flat5FieldsDetailInfo.length == 0) && (flat10FieldsDetailInfo == null || flat10FieldsDetailInfo.length == 0)) return false;	
 			
 			var hero:HeroBean = bestHeroForExtTasks();
 			if (hero == null) return false;
 			
-			var troops:TroopBean = getTroopBeanForLevel(5);
+			var troops:TroopBean = getTroopBeanForLevel( field.level );
 			if (troops == null) return false;
-									
-			var fieldInfo:MapCastleBean = flat5FieldsDetailInfo[0];
-			flat5FieldsDetailInfo.removeItemAt(0);
+
+			if ( field.level == 5 ) {						
+				var fieldInfo:MapCastleBean = flat5FieldsDetailInfo[0];
+				flat5FieldsDetailInfo.removeItemAt(0);
+			} else if ( field.level == 10 ) {						
+				var fieldInfo:MapCastleBean = flat10FieldsDetailInfo[0];
+				flat10FieldsDetailInfo.removeItemAt(0);
+			}  
 			
-			// this is to prevent two towns building on the same spot -- the later is a hit on the newly built npc
+			// this is to prevent two towns building on the same spot -- 
+			// the later is a hit on the newly built npc
 			if (!playerTimingAllowed("npcbuilding" + fieldInfo.id, 24*3600)) return false;
 			if (Map.getType(fieldInfo.id) != FieldConstants.TYPE_FLAT) return false;
 			
@@ -4079,69 +4086,13 @@ package scripts.jobQueue.script {
 			newArmy.targetPoint = fieldInfo.id;
 			
 			npcLocations.push(fieldInfo.id);
-			logMessage("Attack level 5 flat " + Map.fieldIdToString(fieldInfo.id) + " for npc with " + troops.archer + " archers " +
+			logMessage("Attack level " + field.level + " flat " + Map.fieldIdToString(fieldInfo.id) + " for npc with " + troops.archer + " archers " +
 				Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
 
 			ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy);
 			Map.updateDetailInfo(fieldInfo.id);
 			return true;
-		}
-		
-		private function handleBuildNPC10() : Boolean {
-			if (!citySlotAvailable()) return false;
-			
-			// intentional -- so that the bot can be used to help building
-			// npc at far away places by manually attack the place			
-			// makeValleyAvailable();			
-			if (countActiveArmies() >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) return false;
-
-			// if a flat is currently owned
-			var flat10:FieldBean = null;
-			for each (var field:FieldBean in fields) {
-				if (field.type == FieldConstants.TYPE_FLAT && field.level == 10) {
-					if (getArmyWithResourceHeadingTo(field.id) != null) continue;
-					flat10 = field;
-					break;
-				}
-			}
-			
-			var newArmy:NewArmyParam;
-			if (flat10 != null) {
-				return sendTroopToBuildCity(flat10.id);
-			}
-
-			// checking condition for sending troop
-			if (countFlat10FieldsUnderAttack() > 0) return false;
-			if (flat10FieldsDetailInfo == null || flat10FieldsDetailInfo.length == 0) return false;	
-			
-			var hero:HeroBean = bestHeroForExtTasks();
-			if (hero == null) return false;
-			
-			var troops:TroopBean = getTroopBeanForLevel(10);
-			if (troops == null) return false;
-									
-			var fieldInfo:MapCastleBean = flat10FieldsDetailInfo[0];
-			flat10FieldsDetailInfo.removeItemAt(0);
-			
-			// this is to prevent two towns building on the same spot -- the later is a hit on the newly built npc
-			if (!playerTimingAllowed("npcbuilding" + fieldInfo.id, 24*3600)) return false;
-			if (Map.getType(fieldInfo.id) != FieldConstants.TYPE_FLAT) return false;
-			
-			newArmy = new NewArmyParam();
-			newArmy.missionType = ObjConstants.ARMY_MISSION_OCCUPY;
-			newArmy.troops = troops;
-			newArmy.resource = new ResourceBean();
-			newArmy.heroId = hero.id;
-			newArmy.targetPoint = fieldInfo.id;
-			
-			npc10Locations.push(fieldInfo.id);
-			logMessage("Attack level 10 flat " + Map.fieldIdToString(fieldInfo.id) + " for npc with " + troops.archer + " archers " +
-				Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
-
-			ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy);
-			Map.updateDetailInfo(fieldInfo.id);
-			return true;
-		}
+		}		
 
 		public function buildcity(fieldId:int) : void {
 			if (buildCityLocation != -1) {
@@ -4428,8 +4379,10 @@ package scripts.jobQueue.script {
 
 		private function handleAttackNPC10(training:Boolean) : Boolean {
 			if (localNPC10s == null){
-					logMessage("No NPC10's in range");
-					return false;
+				if (getConfig(CONFIG_DEBUG) > 0) {
+					logMessage("No NPC10's in range");					
+				}
+				return false;
 			}
 			if (researches == null) return false;
 			if (isUnderBP()) return false;
@@ -4454,7 +4407,9 @@ package scripts.jobQueue.script {
 			
 			var minLevel:int = 10;
 			var maxLevel:int = 10;
-			logMessage("checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
+			if (getConfig(CONFIG_DEBUG) > 0) {
+				logMessage("checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
+			}
 			if (hero.power < configs[CONFIG_NPC10HERO] ) {				
 				return false;
 			} 
@@ -4500,7 +4455,7 @@ package scripts.jobQueue.script {
 				newArmy.troops = tr;
 				newArmy.resource = new ResourceBean();
 				
-				logMessage(((training) ? "TRAIN NPC10 " : "FARM NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
+				logMessage(((training) ? "TRAIN NPC10 " : "FARM NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " " + Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
 				ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy, handleArmyCommandResponse);				
 				Map.updateInfo(fieldId);
 				return true;
@@ -6300,6 +6255,32 @@ package scripts.jobQueue.script {
 				obj.col2 = formatNum(fortification[ troopIntNames[type] ]);
 				obj.col3 = formatNum(prod[ troopIntNames[type] ]);
 				data.addItem(obj);			
+			}
+   		}
+
+    	public function updateNPC5Data(data:ArrayCollection) : void {
+    		data.removeAll();
+    		var x:int  = 0;			
+			for each(var fieldid:int in localNPCs ) {
+				fieldid = localNPCs[ x ].toString();
+    			var obj:Object = new Object();
+				obj.col1 = Map.fieldIdToCoordString(fieldid);
+				obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
+				data.addItem(obj);			
+				x = x + 1
+			}
+   		}
+
+    	public function updateNPC10Data(data:ArrayCollection) : void {
+    		data.removeAll();
+    		var x:int  = 0;			
+			for each(var fieldid:int in localNPCs ) {
+				fieldid = localNPC10s[ x ].toString();
+    			var obj:Object = new Object();
+				obj.col1 = Map.fieldIdToCoordString(fieldid);
+				obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
+				data.addItem(obj);			
+				x = x + 1
 			}
    		}
 
