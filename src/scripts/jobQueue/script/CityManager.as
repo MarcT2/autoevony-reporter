@@ -3734,7 +3734,7 @@ package scripts.jobQueue.script {
 			
 			var tr:TroopBean = new TroopBean();
 			var archers:Array = new  Array(0, 50, 100, 200,  400,  800, 5000, 10000, 15000, 40000, 60000);
-			var warriors:Array = new Array(0,  0,   0,   0, 1250, 2500, 5000, 10000, 20000, 40000, 60000);
+			var warriors:Array = new Array(0,  0,   0,   0, 1250, 2500, 5000, 10000, 20000, 40000, 40000);
 			var reqRally:Array = new Array(0,  1,   1,   1,    1,    1,    1,     2,     3,     6,     8);
 
 			var layers:Array = new Array(0, 0, 0, 0,  1, 1, 1, 1, 1, 1, 1);
