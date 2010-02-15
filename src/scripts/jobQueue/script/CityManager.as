@@ -600,7 +600,7 @@ package scripts.jobQueue.script {
 			if (getConfig(CONFIG_HERO) > 0) uplevelHeros();
 			if (getConfig(CONFIG_DUMPING) > 0) handleDumpingResource();
 
-			if (getConfig(CONFIG_NPC) > 0) handleSearchNPCs();
+			if (getConfig(CONFIG_NPC) > 0 || getConfig(CONFIG_DOFARM10) > 0 ) handleSearchNPCs();
 			
 			if (getConfig(CONFIG_VALLEY) > 0) {
 				handleSearchResourceFields();
@@ -619,7 +619,7 @@ package scripts.jobQueue.script {
 			if (!attacked && getConfig(CONFIG_BUILD10) > 0) attacked = handleBuildNPC10();			
 			if (ready && !attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForResource();
 			if (ready && !attacked && getConfig(CONFIG_DOFARM10) > 0 ) {
-				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC Activated ... Experimental ***");				
+				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
 				attacked = handleAttackNPC10ForResource();
 			}
 			if (!attacked && getConfig(CONFIG_VALLEY) > 0) attacked = handleAttackResourceFields();
@@ -3474,7 +3474,7 @@ package scripts.jobQueue.script {
 			candidateLocalFields.sort(compareByLocalFieldPriority);
 			candidateFlat5Fields.sort(compareByLocalFieldPriority);
 			candidateFlat10Fields.sort(compareByLocalFieldPriority);
-			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + candidateFlat10Fields.length + "LVL10 FLATS's ***");
+			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + candidateFlat10Fields.length + " LVL10 FLATS's ***");
 		}
 
 		private var lastSearchResourceLevel:int = -1;
@@ -4083,7 +4083,7 @@ package scripts.jobQueue.script {
 			
 			// intentional -- so that the bot can be used to help building
 			// npc at far away places by manually attack the place			
-			makeValleyAvailable();			
+			// makeValleyAvailable();			
 			if (countActiveArmies() >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) return false;
 
 			// if a flat is currently owned
