@@ -165,10 +165,10 @@ package scripts.jobQueue.script {
 		}
 		
 		private function logMessage(message:String) : void {
-			dispatchEvent(new ScriptLogEvent("(" + castle.name + ") - " + message));
+			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + castle.name + ")</font> - " + message));
 		}
 		private function logError(message:String) : void {
-			dispatchEvent(new ScriptLogEvent("(" + castle.name + ") - " + message));
+			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + castle.name + ") - " + message + "</font>"));
 		}
 		private function isMainTown() : Boolean {
 			return castle == player.castlesArray[0];
@@ -461,18 +461,18 @@ package scripts.jobQueue.script {
 			
 			// double check and warn regarding abandon
 			if (configs[CONFIG_NPC10HERO] < 100) {
-				logError("YOU WILL LOSE A CRAPLOAD OF TROOPS FARMING LVL10 NPC'S : AUTOFARM 10 DISABLED");
+				logError("<b>YOU WILL LOSE A CRAPLOAD OF TROOPS FARMING LVL10 NPC'S : AUTOFARM 10 DISABLED</b>");
 				configs[CONFIG_NPC10HERO] = 0;
 				configs[CONFIG_DOFARM10] = 0;
 			}
 			if (configs[CONFIG_NPC10HERO] < 200 && configs[CONFIG_NPC10HERO] >= 100) {
-				logError("YOU WILL LOSE MAJOR TROOPS FARMING LVL10 NPC'S : I WARNED YOU!!!");
+				logError("<b>YOU WILL LOSE MAJOR TROOPS FARMING LVL10 NPC'S : I WARNED YOU!!!</b>");
 			}
 			if (configs[CONFIG_ABANDON] > 0) {
 				var count:int = 0;
 				for each(var key:String in configs) count++;
 				if (count != 1) {
-					logError("ABANDON should be used alone without any other config setting: ABANDON disabled");
+					logError("<b>ABANDON should be used alone without any other config setting: ABANDON disabled</b>");
 					configs[CONFIG_ABANDON] = 0;
 				} else {
 					logMessage("Preparing town for abandonment.  Lower loyalty to 0 and destroy defenses!!!");
@@ -6039,6 +6039,9 @@ package scripts.jobQueue.script {
     		}
     	}
 
+
+
+
     	public function updateResearchData(data:ArrayCollection) : void {
     		data.removeAll();
     		if (researches == null) return;
@@ -6414,3 +6417,4 @@ package scripts.jobQueue.script {
    		}
 	}
 }
+
