@@ -4067,11 +4067,12 @@ package scripts.jobQueue.script {
 			var troops:TroopBean = getTroopBeanForLevel( field.level );
 			if (troops == null) return false;
 
+			var fieldInfo:MapCastleBean = new MapCastleBean();
 			if ( field.level == 5 ) {						
-				fieldInfo:MapCastleBean = flat5FieldsDetailInfo[0];
+				fieldInfo = flat5FieldsDetailInfo[0];
 				flat5FieldsDetailInfo.removeItemAt(0);
 			} else if ( field.level == 10 ) {						
-				fieldInfo:MapCastleBean = flat10FieldsDetailInfo[0];
+				fieldInfo = flat10FieldsDetailInfo[0];
 				flat10FieldsDetailInfo.removeItemAt(0);
 			}  
 			
