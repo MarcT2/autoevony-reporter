@@ -4068,10 +4068,10 @@ package scripts.jobQueue.script {
 			if (troops == null) return false;
 
 			if ( field.level == 5 ) {						
-				var fieldInfo:MapCastleBean = flat5FieldsDetailInfo[0];
+				fieldInfo:MapCastleBean = flat5FieldsDetailInfo[0];
 				flat5FieldsDetailInfo.removeItemAt(0);
 			} else if ( field.level == 10 ) {						
-				var fieldInfo:MapCastleBean = flat10FieldsDetailInfo[0];
+				fieldInfo:MapCastleBean = flat10FieldsDetailInfo[0];
 				flat10FieldsDetailInfo.removeItemAt(0);
 			}  
 			

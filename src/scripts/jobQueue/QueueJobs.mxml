@@ -1047,7 +1047,6 @@
 							</mx:Canvas>
 						</mx:ViewStack>
 						<mx:HBox width="100%" height="24" verticalAlign="bottom">
-							<mx:Button label="To:" id="userButton" click="" height="100%"/>
 							<mx:TextInput id="chatText" width="90%" editable="true" height="100%" maxChars="150"/>
 							<mx:Button label="Send" id="sendButton" click="sendChat()" height="100%"/>
 						</mx:HBox>
