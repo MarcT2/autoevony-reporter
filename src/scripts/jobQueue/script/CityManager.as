@@ -3386,7 +3386,7 @@ package scripts.jobQueue.script {
 
 			localNPCs.sort(compareByLocalFieldPriority);
 			localNPC10s.sort(compareByLocalFieldPriority);
-			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPC10s.length + " LVL10 NPC's ***");
+			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPC10s.length + " LVL10 NPC's ***" , "#FF0000");
 		}
 		
 		private function findEvasionFieldId() : void {
@@ -3537,7 +3537,7 @@ package scripts.jobQueue.script {
 			if (resourceFieldsDetailInfo != null && resourceFieldsDetailInfo.length >= max) return;
 
 			if (cityTimingAllowed("searchresourcefield", 300)) {
-				logMessage("Searching for unoccupied valleys for resource...");
+				logMessage("Searching for unoccupied valleys for resource...","#7A1595");
 			}
 
 			for (var i:int = 0; i < candidateResourceFields.length; i++) {
@@ -3675,13 +3675,20 @@ package scripts.jobQueue.script {
 					tr.scouter = 6000;
 					tr.militia = 1000;
 					tr.carriage = 2000;
+				} else if ( configs[CONFIG_DOFARM10] == 3 ) {			
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.4k,s:3k,warr:1.2k,work:1k,t:2k ***");
+					tr.archer = 92400;
+					tr.scouter = 3000;
+					tr.militia = 1200;
+					tr.peasants = 1400;
+					tr.carriage = 2000;
 				}
 
 				if ( troop.archer < tr.archer ) net = 1;			
 				if ( troop.scouter < tr.scouter ) net = 1;
 				if ( troop.carriage < tr.carriage ) net = 1;
 				if (net == 1) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Not enough troops to farm lvl 10 ***");
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Not enough troops to farm lvl 10 ***","#660000");
 					return null;
 				}
 				return tr;
@@ -5832,7 +5839,7 @@ package scripts.jobQueue.script {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos);
 			} else {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos +
-    				"\n" + xml.@reportUrl);
+    				"\n" + "" +xml.@reportUrl + "");
 			}
     			
     		
