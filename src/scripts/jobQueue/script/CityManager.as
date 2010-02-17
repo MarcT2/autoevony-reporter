@@ -2430,7 +2430,7 @@ package scripts.jobQueue.script {
 			if (response.castleId != castle.id) return;			
 			if (response.goldNeed == 0) return;  // nothing to cure
 			
-			logMessage("Troop injured: " + troopBeanToString(response.troop) + ", healing requires " + response.goldNeed + " gold");
+			logMessage("Troop injured: " + troopBeanToString(response.troop) + ", healing requires " + response.goldNeed + " gold" , "#FF0000");
 			healingGoldRequired = response.goldNeed;
 		}
 
@@ -5839,7 +5839,7 @@ package scripts.jobQueue.script {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos);
 			} else {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos +
-    				"\n" + "" +xml.@reportUrl + "");
+    				"\n" + "" + xml.@reportUrl + "");
 			}
     			
     		
