@@ -164,12 +164,14 @@ package scripts.jobQueue.script {
 			trace("Testing called");
 		}
 		
-		private function logMessage(message:String) : void {
-			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + castle.name + ")</font> - " + message));
+		private function logMessage(message:String, color:String = "#000000" ) : void {
+			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + castle.name + ")</font> - <font color='"+ color + "'>" + message + "</font>"));
 		}
+		
 		private function logError(message:String) : void {
 			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + castle.name + ") - " + message + "</font>"));
 		}
+		
 		private function isMainTown() : Boolean {
 			return castle == player.castlesArray[0];
 		}
@@ -1796,7 +1798,7 @@ package scripts.jobQueue.script {
 			if (!forced && (!playerTimingAllowed("troophealing", 10, true) || !cityTimingAllowed("troophealing", 300) || !playerTimingAllowed("troophealing", 10))) return;
 
 			if (healingGoldRequired > 0 && resource.gold > healingGoldRequired) {
-				logMessage("CURING TROOPS using " + healingGoldRequired + " gold");
+				logMessage("CURING TROOPS using " + healingGoldRequired + " gold" , "#660000");
 				healingGoldRequired = 0;
 				ActionFactory.getInstance().getArmyCommands().cureInjuredTroop(castle.id);
 			}	
@@ -1833,7 +1835,7 @@ package scripts.jobQueue.script {
 					if (worst != null) worstScore = rankingScore(worst.level, worst.power + worst.remainPoint);
 					var newScore:int = rankingScore(response.hero.level, response.hero.power + response.hero.remainPoint);
 					if (newScore >= worstScore) {
-						logMessage("Auto release bad captured hero " + heroToString(response.hero));
+						logMessage("Auto release bad captured hero " + heroToString(response.hero) , "#660000" );
 						ActionFactory.getInstance().getHeroCommand().releaseHero(castle.id, response.hero.id);
 					}
 				}
@@ -1867,13 +1869,13 @@ package scripts.jobQueue.script {
 				while (experience >= 100*level*level) {
 					experience -= 100*level*level;
 					level++;
-					logMessage("uplevel hero: " + heroToString(hero));
+					logMessage("uplevel hero: " + heroToString(hero) , "#000066");
 					ActionFactory.getInstance().getHeroCommand().levelUp(castle.id, hero.id);
 					any = true;
 				}
 				if (!isLoyal(hero) && resource.gold >= hero.level * 100) {
 					if (cityTimingAllowed("reward" + hero.id, 900)) {
-						logMessage("reward hero: " + heroToString(hero));
+						logMessage("reward hero: " + heroToString(hero) + "#000066");
 						ActionFactory.getInstance().getHeroCommand().awardGold(castle.id, hero.id);
 						resource.gold -= hero.level*100;
 						any = true;
@@ -3057,7 +3059,7 @@ package scripts.jobQueue.script {
 					if ((type == TFConstants.T_BALLISTA || type == TFConstants.T_CARRIAGE) && batch > 100) batch = 100;
 					
 					promoteAttackChief();
-					logMessage("Use spare resource for " + batch + " " + troopExtNames[type] + " on barrack at " + building.positionId);
+					logMessage("Use spare resource for " + batch + " " + troopExtNames[type] + " on barrack at " + building.positionId , "#169736");
 					ActionFactory.getInstance().getTroopCommands().produceTroop(castle.id, building.positionId, type, batch, false, false);			
 					promotePoliticsChief();
 					return true;
@@ -3207,7 +3209,7 @@ package scripts.jobQueue.script {
 			if (batch >= 200) {
 				batch = batch/2;		// use half of the currently available resources
 				if (batch > 200) batch = 200;		// build at most 200 AT at a time
-				logMessage("Use spare resources for " + batch + " archer towers");
+				logMessage("Use spare resources for " + batch + " archer towers" , "#169736");
 				ActionFactory.getInstance().getFortificationsCommands().produceWallProtect(castle.id, TFConstants.F_ARROWTOWER, batch);					
 				return true;
 			}
@@ -3225,77 +3227,77 @@ package scripts.jobQueue.script {
 		
 		private function handleComfortRelief() : void {
 			if (market[TradeConstants.RES_TYPE_FOOD] == null || market[TradeConstants.RES_TYPE_FOOD].buyersArray.length == 0) return;
-
+			var color:String = "#C8A44E";
 			if (doingComfortRelief) {
 				if (resource.complaint > 0 || resource.support <= 40) {
 					if (resource.texRate > 20) {
-						logMessage("Set tax rate to 20%");
+						logMessage("Set tax rate to 20%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 20, handleModifyTaxRateResponse);
 					}
 					if (resource.gold >= resource.maxPopulation && resource.support <= 40 && cityTimingAllowed("comfort", 905)) {
-						logMessage("Do comfort praying");
+						logMessage("Do comfort praying" , color );
 						ActionFactory.getInstance().getInteriorCommands().pacifyPeople(castle.id, CityStateConstants.COMFORT_PRAY);
 					} else if (resource.food.amount >= resource.maxPopulation && cityTimingAllowed("comfort", 905)) {
-						logMessage("Do comfort relief");
+						logMessage("Do comfort relief" , color );
 						ActionFactory.getInstance().getInteriorCommands().pacifyPeople(castle.id, CityStateConstants.COMFORT_RELIEF);
 					}
 				} else if (sellPrice(TradeConstants.RES_TYPE_FOOD) >= 0.13 || resource.curPopulation < 0.7 * resource.maxPopulation || resource.food.amount < resource.maxPopulation) {
 					if (!cityTimingAllowed("comfortreliefmodify", 900)) return;
-					logMessage("Disable comfort relief");
+					logMessage("Disable comfort relief" , color );
 					doingComfortRelief = false;
 					if (resource.curPopulation < 0.7 * resource.maxPopulation && resource.texRate > 20) {
-						logMessage("Set tax rate to 20%");
+						logMessage("Set tax rate to 20%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 20, handleModifyTaxRateResponse);
 					}
 				} else  {
 					if (resource.texRate != 100) {
-						logMessage("Set tax rate to 100%");
+						logMessage("Set tax rate to 100%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 100, handleModifyTaxRateResponse);
 					}
 					if (resource.support <= 95 && cityTimingAllowed("comfort", 905)) {
-						logMessage("Do comfort relief");
+						logMessage("Do comfort relief" , color );
 						ActionFactory.getInstance().getInteriorCommands().pacifyPeople(castle.id, CityStateConstants.COMFORT_RELIEF);
 					}
 				}
 			} else {
 				if (resource.complaint > 0 || resource.support <= 40) {
 					if (!cityTimingAllowed("comfortreliefmodify", 900)) return;
-					logMessage("Enable comfort relief");
+					logMessage("Enable comfort relief" , color );
 					doingComfortRelief = true;
 				} else if (sellPrice(TradeConstants.RES_TYPE_FOOD) > 0.2) {
 					if (resource.gold > 1000000 && resource.texRate != 0) {
-						logMessage("Set tax rate to 0%");
+						logMessage("Set tax rate to 0%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 0, handleModifyTaxRateResponse);
 					} else if (resource.gold > 200000 && resource.texRate != 0 && resource.curPopulation < resource.buildPeople) {
-						logMessage("Set tax rate to 0%");
+						logMessage("Set tax rate to 0%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 0, handleModifyTaxRateResponse);
 					} else if (resource.gold < 1000000 && resource.texRate < 30) {
-						logMessage("Set tax rate to 30%");
+						logMessage("Set tax rate to 30%" , color );
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 30, handleModifyTaxRateResponse);
 					}
 				} else if (sellPrice(TradeConstants.RES_TYPE_FOOD) < 0.09) {
 					if (resource.curPopulation < 0.75 * resource.maxPopulation || resource.food.amount < resource.maxPopulation) {
 						if (resource.texRate > 20) {
-							logMessage("Set tax rate to 20%");
+							logMessage("Set tax rate to 20%" , color );
 							ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 20, handleModifyTaxRateResponse);
 						}
 					} else {
 						if (!cityTimingAllowed("comfortreliefmodify", 900)) return;
-						logMessage("Enable comfort relief, set tax rate to 100%");
+						logMessage("Enable comfort relief, set tax rate to 100%" , color );
 						doingComfortRelief = true;
 						ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 100, handleModifyTaxRateResponse);				
 					}
 				} else if (resource.curPopulation < 0.8 * resource.maxPopulation && resource.texRate > 20) {
-					logMessage("Set tax rate to 20%");
+					logMessage("Set tax rate to 20%" , color );
 					ActionFactory.getInstance().getInteriorCommands().modifyTaxRate(castle.id, 20, handleModifyTaxRateResponse);
 				}
 			}
 
 			if (resource.curPopulation < resource.maxPopulation * (1-resource.texRate/100) * 0.9 && resource.curPopulation - resource.workPeople < 500 && resource.food.amount >= 50*resource.maxPopulation && cityTimingAllowed("comfort", 905)) {
-				logMessage("Do comfort to raise population");
+				logMessage("Do comfort to raise population" , color );
 				ActionFactory.getInstance().getInteriorCommands().pacifyPeople(castle.id, CityStateConstants.COMFORT_POPULATION_RAISE);				
 			} else if (getConfig(CONFIG_COMFORT) > 1 && resource.gold >= resource.maxPopulation * 40 && resource.gold > 1000000 && cityTimingAllowed("comfort", 905)) {
-				logMessage("Do comfort praying for prestige");
+				logMessage("Do comfort praying for prestige" , color );
 				ActionFactory.getInstance().getInteriorCommands().pacifyPeople(castle.id, CityStateConstants.COMFORT_PRAY);
 			}
 		}
@@ -6277,7 +6279,7 @@ package scripts.jobQueue.script {
     	public function updateNPC10Data(data:ArrayCollection) : void {
     		data.removeAll();
     		var x:int  = 0;			
-			for each(var fieldid:int in localNPCs ) {
+			for each(var fieldid:int in localNPC10s ) {
 				fieldid = localNPC10s[ x ].toString();
     			var obj:Object = new Object();
 				obj.col1 = Map.fieldIdToCoordString( fieldid );

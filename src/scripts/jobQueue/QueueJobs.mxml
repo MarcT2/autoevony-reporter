@@ -856,14 +856,14 @@
         			return;
         		}
         		if (response.ok != 1) {
-        			logCommandMessage("Error: " + response.errorMsg);
+        			logCommandMessage("Error Generic: " + response.errorMsg);
         			return;
         		}        		
         	}
 
         	private function handleCommandResponse(response:PlayerInfoResponse) : void {
         		if (response.ok != 1) {
-        			logCommandMessage("Error: " + response.errorMsg);
+        			logCommandMessage("Error Player: " + response.errorMsg);
         			return;
         		}
         	}
