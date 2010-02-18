@@ -467,7 +467,7 @@ package scripts.jobQueue.script {
 				configs[CONFIG_NPC10HERO] = 0;
 				configs[CONFIG_DOFARM10] = 0;
 			}
-			if (configs[CONFIG_NPC10HERO] < 200 && configs[CONFIG_NPC10HERO] >= 100) {
+			if (configs[CONFIG_NPC10HERO] < 150 && configs[CONFIG_NPC10HERO] >= 100) {
 				logError("<b>YOU WILL LOSE MAJOR TROOPS FARMING LVL10 NPC'S : I WARNED YOU!!!</b>");
 			}
 			if (configs[CONFIG_ABANDON] > 0) {
@@ -610,9 +610,11 @@ package scripts.jobQueue.script {
 			}
 
 			if (getConfig(CONFIG_HERO) > 0) uplevelHeros();
+			
 			if (getConfig(CONFIG_DUMPING) > 0) handleDumpingResource();
 
 			if ( getConfig(CONFIG_NPC) > 0  ) handleSearchNPCs();
+			
 			if ( getConfig(CONFIG_DOFARM10) > 0 ) handleSearchNPC10s();
 			
 			
@@ -628,10 +630,10 @@ package scripts.jobQueue.script {
 			var attacked:Boolean = false;						
 			var ready:Boolean = marketReady();
 			
-			if (!attacked && buildCityLocation != -1 && castle.fieldId == buildCityFrom) attacked = handleBuildCity();
+			if ( !attacked && buildCityLocation != -1 && castle.fieldId == buildCityFrom ) attacked = handleBuildCity();
 			
-			if ( !attacked && getConfig(CONFIG_BUILD10) > 0 ) attacked = handleBuildNPC10();
-			if ( !attacked && getConfig(CONFIG_BUILDNPC) > 0 ) attacked = handleBuildNPC();
+			if ( !attacked && getConfig( CONFIG_BUILD10 ) > 0 ) attacked = handleBuildNPC10();
+			if ( !attacked && getConfig( CONFIG_BUILDNPC ) > 0 ) attacked = handleBuildNPC();
 									
 			if (ready && !attacked && getConfig(CONFIG_DOFARM10) > 0 ) {
 				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
@@ -3702,7 +3704,7 @@ package scripts.jobQueue.script {
 					tr.militia = 1000;
 					tr.carriage = 2000;
 				} else if ( configs[CONFIG_DOFARM10] == 3 ) {			
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.4k,s:3k,warr:1.2k,work:1k,t:2k ***");
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.5k,s:3.6k,warr:750,work:750,t:2k ***");
 					tr.archer = 92500;
 					tr.scouter = 3600;
 					tr.militia = 750;
