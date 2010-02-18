@@ -3389,7 +3389,7 @@ package scripts.jobQueue.script {
 			}
 
 			localNPCs.sort(compareByLocalFieldPriority);
-			localNPC10s.sort(compareByLocalFieldPriority);
+
 			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPCs.length + " NPC's ***" , "#FF0000");
 		}
 		
