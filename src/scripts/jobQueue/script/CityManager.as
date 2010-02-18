@@ -3688,39 +3688,43 @@ package scripts.jobQueue.script {
 			}
 			return count;
 		}		
-		private function getTroopBeanForNPCLevel(level:int, wantResource:Boolean) : TroopBean {
+
+		private function getTroopBeanForNPC10( wantResource:Boolean) : TroopBean {
 			var tr:TroopBean = new TroopBean();
 			var net:int = 0;
-			if (level == 10 ) { 
-				if ( configs[CONFIG_DOFARM10] == 1 ) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92k,s:6k,t:2k ***");				
-					tr.archer = 92000;
-					tr.scouter = 6000;
-					tr.carriage = 2000;
-				} else if ( configs[CONFIG_DOFARM10] == 2 ) {			
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:91k,s:6k,warr:1k,t:2k ***");
-					tr.archer = 91000;
-					tr.scouter = 6000;
-					tr.militia = 1000;
-					tr.carriage = 2000;
-				} else if ( configs[CONFIG_DOFARM10] == 3 ) {			
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.5k,s:3.6k,warr:750,work:750,t:2k ***");
-					tr.archer = 92500;
-					tr.scouter = 3600;
-					tr.militia = 750;
-					tr.peasants = 750;
-					tr.carriage = 2000;
-				}
-
-				if ( troop.archer < tr.archer ) net = 1;			
-				if ( troop.scouter < tr.scouter ) net = 1;
-				if ( troop.carriage < tr.carriage ) net = 1;
-				if (net == 1) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Not enough troops to farm lvl 10 ***","#660000");
-					return null;
-				}
-				return tr;
+			if ( configs[CONFIG_DOFARM10] == 1 ) {
+				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92k,s:6k,t:2k ***");				
+				tr.archer = 92000;
+				tr.scouter = 6000;
+				tr.carriage = 2000;
+			} else if ( configs[CONFIG_DOFARM10] == 2 ) {			
+				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:91k,s:6k,warr:1k,t:2k ***");
+				tr.archer = 91000;
+				tr.scouter = 6000;
+				tr.militia = 1000;
+				tr.carriage = 2000;
+			} else if ( configs[CONFIG_DOFARM10] == 3 ) {			
+				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.5k,s:3.6k,warr:750,work:750,t:2k ***");
+				tr.archer = 92500;
+				tr.scouter = 3600;
+				tr.militia = 750;
+				tr.peasants = 750;
+				tr.carriage = 2000;
 			}
+
+			if ( troop.archer < tr.archer ) net = 1;			
+			if ( troop.scouter < tr.scouter ) net = 1;
+			if ( troop.carriage < tr.carriage ) net = 1;
+			if (net == 1) {
+				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Not enough troops to farm lvl 10 ***","#660000");
+				return null;
+			} else {
+				return tr;
+			}			
+		}
+
+		private function getTroopBeanForNPCLevel(level:int, wantResource:Boolean) : TroopBean {
+			var tr:TroopBean = new TroopBean();
 			
 			if (level <= 0 || level > 5) return null;
 
@@ -4529,7 +4533,7 @@ package scripts.jobQueue.script {
 				}
 
 				var wantResource:Boolean = (!training) ? true : (getConfig(CONFIG_TRAINING) == 1) ? true : false;
-				var tr:TroopBean = getTroopBeanForNPCLevel( 10 , wantResource );
+				var tr:TroopBean = getTroopBeanForNPC10( wantResource );
 				if (tr == null) continue;
 
 				validCount++;
