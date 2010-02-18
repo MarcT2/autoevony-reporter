@@ -585,13 +585,14 @@ package scripts.jobQueue.script {
 		}
 
 		private function manager() : void {
-			if (furtherInitNeeded) {
+			if ( furtherInitNeeded ) {
 				delayInit();
 				furtherInitNeeded = false;
 			}
 
-			if (getConfig(CONFIG_BUILDING) > 0 || getConfig(CONFIG_RESEARCH) > 0)
+			if (getConfig(CONFIG_BUILDING) > 0 || getConfig(CONFIG_RESEARCH) > 0) {
 				updateCurrRequirements();
+			}
 
 			if (getConfig(CONFIG_BUILDING) > 0) handleBuilding();
 			if (getConfig(CONFIG_RESEARCH) > 0) handleResearching();
@@ -611,7 +612,9 @@ package scripts.jobQueue.script {
 			if (getConfig(CONFIG_HERO) > 0) uplevelHeros();
 			if (getConfig(CONFIG_DUMPING) > 0) handleDumpingResource();
 
-			if (getConfig(CONFIG_NPC) > 0 || getConfig(CONFIG_DOFARM10) > 0 ) handleSearchNPCs();
+			if ( getConfig(CONFIG_NPC) > 0  ) handleSearchNPCs();
+			if ( getConfig(CONFIG_DOFARM10) > 0 ) handleSearchNPC10s();
+			
 			
 			if (getConfig(CONFIG_VALLEY) > 0) {
 				handleSearchResourceFields();
@@ -627,10 +630,9 @@ package scripts.jobQueue.script {
 			
 			if (!attacked && buildCityLocation != -1 && castle.fieldId == buildCityFrom) attacked = handleBuildCity();
 			
-			if (!attacked && getConfig(CONFIG_BUILD10) > 0) attacked = handleBuildNPC10();
-			if (!attacked && getConfig(CONFIG_BUILDNPC) > 0) attacked = handleBuildNPC();
-			
-						
+			if ( !attacked && getConfig(CONFIG_BUILD10) > 0 ) attacked = handleBuildNPC10();
+			if ( !attacked && getConfig(CONFIG_BUILDNPC) > 0 ) attacked = handleBuildNPC();
+									
 			if (ready && !attacked && getConfig(CONFIG_DOFARM10) > 0 ) {
 				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
 				attacked = handleAttackNPC10ForResource();
@@ -657,6 +659,7 @@ package scripts.jobQueue.script {
 				if (!masterTimer.canSend(timeSlot)) return;
 			
 				manager();
+				
 			} catch(error:Error) {
 				if (cityTimingAllowed("error", 60) || getConfig(CONFIG_DEBUG) > 0) logMessage("Error: " + error.message + "\n" + error.getStackTrace());
 			}
@@ -2842,7 +2845,7 @@ package scripts.jobQueue.script {
 				if (productionRate < 1) productionRate = 1;
 				
 				if (oldProd != productionRate) {
-					logMessage("set production rate: " + productionRate);
+					logMessage("set production rate: " + productionRate , "#169736");
 					ActionFactory.getInstance().getInteriorCommands().modifyCommenceRate(castle.id, productionRate, productionRate, productionRate, productionRate);
 				}
 			}
@@ -2853,7 +2856,7 @@ package scripts.jobQueue.script {
 				if (productionRate > 100) productionRate = 100;
 				if (productionRate < 1) productionRate = 1;
 				if (productionRate != oldProd) {
-					logMessage("set production rate: " + productionRate);
+					logMessage("set production rate: " + productionRate , "#169736");
 					ActionFactory.getInstance().getInteriorCommands().modifyCommenceRate(castle.id, productionRate, productionRate, productionRate, productionRate);
 				}
 			}
@@ -2942,7 +2945,7 @@ package scripts.jobQueue.script {
 							promoteAttackChief();
 						}
 
-						if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + 1 + " " + troopExtNames[type] + " on reserved barrack at " + reservedBarrack.positionId);
+						if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + 1 + " " + troopExtNames[type] + " on reserved barrack at " + reservedBarrack.positionId , "#169736");
 						ActionFactory.getInstance().getTroopCommands().produceTroop(castle.id, reservedBarrack.positionId, type, 1, false, false);			
 					}
 				}
@@ -2987,7 +2990,7 @@ package scripts.jobQueue.script {
 						promoteAttackChief();
 					}
 
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + batch + " " + troopExtNames[type] + " on barrack at " + building.positionId);
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + batch + " " + troopExtNames[type] + " on barrack at " + building.positionId , "#169736");
 					ActionFactory.getInstance().getTroopCommands().produceTroop(castle.id, building.positionId, type, batch, false, false);			
 					totalTroop[ troopIntNames[type] ] += batch;
 					break;
@@ -3162,7 +3165,7 @@ package scripts.jobQueue.script {
 						clear = true;
 						clearFortificationsDumpItems();
 					}	
-					logMessage("Produce " + 1 + " " + troopExtNames[type]);
+					logMessage("Produce " + 1 + " " + troopExtNames[type] , "#169736");
 					ActionFactory.getInstance().getFortificationsCommands().produceWallProtect(castle.id, type, 1);					
 				}
 			}
@@ -3176,7 +3179,7 @@ package scripts.jobQueue.script {
 				if (remain <= 0) continue;
 				
 				if (canProduceFortification(type, remain) && spaceAvailableForFortification(remain)) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + remain + " " + troopExtNames[type]);
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + remain + " " + troopExtNames[type] , "#169736");
 					ActionFactory.getInstance().getFortificationsCommands().produceWallProtect(castle.id, type, remain);					
 					return;
 				}
@@ -3199,7 +3202,7 @@ package scripts.jobQueue.script {
 			var batch:int = 10;
 			for each (var type:int in types) {
 				if (canProduceFortification(type, batch) && spaceAvailableForFortification(batch) && fortification[ troopIntNames[type] ] + prod[ troopIntNames[type] ] < fortificationsRequirement[ troopIntNames[type] ]) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + batch + " " + troopExtNames[type]);
+					if (getConfig(CONFIG_DEBUG) > 0) logMessage("Produce " + batch + " " + troopExtNames[type] , "#169736");
 					ActionFactory.getInstance().getFortificationsCommands().produceWallProtect(castle.id, type, batch);					
 					return true;
 				}
@@ -3376,22 +3379,42 @@ package scripts.jobQueue.script {
 			if (!Map.isMapReady(cx, cy, r)) return;
 		
 			localNPCs = new Array();
-			localNPC10s = new Array();
 			
 			for (var x:int = cx - r; x <= cx + r; x++) {
 				for (var y:int = cy - r; y <= cy + r; y++) {
 					if ((x-cx)*(x-cx) + (y-cy)*(y-cy) > r*r) continue;
 					var fieldId:int = Map.getFieldId(x, y);
 					if (Map.getType(fieldId) == FieldConstants.TYPE_NPC && Map.getLevel(fieldId) <= 5) localNPCs.push(fieldId);
-					if (Map.getType(fieldId) == FieldConstants.TYPE_NPC && Map.getLevel(fieldId) == 10) localNPC10s.push(fieldId);
 				}
 			}
 
 			localNPCs.sort(compareByLocalFieldPriority);
 			localNPC10s.sort(compareByLocalFieldPriority);
-			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPC10s.length + " LVL10 NPC's ***" , "#FF0000");
+			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPCs.length + " NPC's ***" , "#FF0000");
 		}
 		
+		private function handleSearchNPC10s() : void {			
+			if (localNPC10s != null) return;
+			var r:int = 15;
+			var cx:int = Map.getX(castle.fieldId);
+			var cy:int = Map.getY(castle.fieldId);
+			
+			if (!Map.isMapReady(cx, cy, r)) return;
+		
+			localNPC10s = new Array();
+			
+			for (var x:int = cx - r; x <= cx + r; x++) {
+				for (var y:int = cy - r; y <= cy + r; y++) {
+					if ((x-cx)*(x-cx) + (y-cy)*(y-cy) > r*r) continue;
+					var fieldId:int = Map.getFieldId(x, y);
+					if (Map.getType(fieldId) == FieldConstants.TYPE_NPC && Map.getLevel(fieldId) == 10) localNPC10s.push(fieldId);
+				}
+			}
+
+			localNPC10s.sort(compareByLocalFieldPriority);
+			if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Found " + localNPC10s.length + " LVL10 NPC's ***" , "#FF0000");
+		}
+
 		private function findEvasionFieldId() : void {
 			if (evasionFieldId != -1) return;
 			
