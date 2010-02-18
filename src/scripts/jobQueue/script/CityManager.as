@@ -4102,13 +4102,12 @@ package scripts.jobQueue.script {
 			
 			var hero:HeroBean = bestHeroForExtTasks();
 			if (hero == null) return false;
-			
-			trace( flat5.level );
-			var troops:TroopBean = getTroopBeanForLevel( flat5.level );
+						
+			var troops:TroopBean = getTroopBeanForLevel( 5 );
 			if (troops == null) return false;
 
 			var fieldInfo:MapCastleBean = new MapCastleBean();
-			if ( flat5.level == 5 ) {						
+			if ( field.level == 5 ) {						
 				fieldInfo = flat5FieldsDetailInfo[0];
 				flat5FieldsDetailInfo.removeItemAt(0);
 			} 
@@ -4168,7 +4167,7 @@ package scripts.jobQueue.script {
 			if (troops == null) return false;
 
 			var fieldInfo:MapCastleBean = new MapCastleBean();
-			if ( flat10.level == 10 ) {						
+			if ( field.level == 10 ) {						
 				fieldInfo = flat10FieldsDetailInfo[0];
 				flat10FieldsDetailInfo.removeItemAt(0);
 			}  
