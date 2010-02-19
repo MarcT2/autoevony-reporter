@@ -108,7 +108,7 @@ package {
 		{
 			// send version
 			trace("sent version");
-		    _sendMessage("gameClient.version",  "091103_11");
+		    _sendMessage("gameClient.version", Version.GAMECLIENTVERSION);
 
 			// send login info
 			trace("sent login info");

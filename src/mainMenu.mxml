@@ -150,8 +150,8 @@
 	<mx:Button click="onStartBtn();" label="Login" />
 	<mx:Label text="" id="ipHints"/>
 	<mx:Label text="Manage all aspects of your towns now!" />
-	</mx:Panel>	
-	<mx:Label bottom="10" text="" />
+	</mx:Panel>
+	<mx:Label bottom="10" text="Build {Version.build_number}, compiled on {Version.build_time} using Evony version {Version.GAMECLIENTVERSION}" />
 	
 </mx:Application>
 
