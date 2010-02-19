@@ -107,7 +107,6 @@ package {
 		private function connectionHandler(param1:Event) : void
 		{
 			// send version
-			
 			trace("sent version");
 		    _sendMessage("gameClient.version",  "091103_11");
 

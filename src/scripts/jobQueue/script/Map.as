@@ -13,8 +13,8 @@ package scripts.jobQueue.script
 	
 	public class Map
 	{
-		private static var fieldNames:Array = new Array("", "Forest", "Desert", "Hill", "Swamp",
-			"Grass Land", "Lake", "", "", "", "Flat", "Castle", "NPC"
+		public static var fieldNames:Array = new Array("", "Forest", "Desert", "Hill", "Swamp",
+			"GrassLand", "Lake", "", "", "", "Flat", "Castle", "NPC"
 		);
 				
 		private static var timer:Timer = null;
@@ -57,7 +57,7 @@ package scripts.jobQueue.script
 			var type:int = getType(fieldId);
 			return (type == -1) ? "" : fieldNames[type];
 		}
-		
+
 		public static function isMapReady(cx:int, cy:int, r:int) : Boolean {
 			for (var x:int = cx-r; x <= cx+r; x++) {
 				for (var y:int = cy-r; y <= cy+r; y++) {
@@ -239,6 +239,6 @@ package scripts.jobQueue.script
 				}
 			}
 			return result;
-		}		
+		}
 	}
 }

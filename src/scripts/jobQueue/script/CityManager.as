@@ -638,7 +638,6 @@ package scripts.jobQueue.script {
 				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
 				attacked = handleAttackNPC10ForResource();
 			}
-			if (ready && !attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForResource();
 			if (!attacked && getConfig(CONFIG_VALLEY) > 0) attacked = handleAttackResourceFields();
 			if (!attacked && getConfig(CONFIG_HUNTING) > 0) attacked = handleAttackLocalFields();
 			if (!attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForTrainingOrResource();
@@ -659,7 +658,6 @@ package scripts.jobQueue.script {
 				if (!masterTimer.canSend(timeSlot)) return;
 			
 				manager();
-				
 			} catch(error:Error) {
 				if (cityTimingAllowed("error", 60) || getConfig(CONFIG_DEBUG) > 0) logMessage("Error: " + error.message + "\n" + error.getStackTrace());
 			}
@@ -1595,7 +1593,7 @@ package scripts.jobQueue.script {
 			return r;
 		}
 		
-		private function getFoodConsume(tr:TroopBean) : Number {
+		public function getFoodConsume(tr:TroopBean) : Number {
 			return 2*tr.peasants + 3*tr.militia + 5*tr.scouter + 6*tr.pikemen + 7*tr.swordsmen +
 				9*tr.archer + 18*tr.lightCavalry + 35*tr.heavyCavalry + 10*tr.carriage +
 				50*tr.ballista + 100*tr.batteringRam + 250*tr.catapult;
@@ -2134,7 +2132,7 @@ package scripts.jobQueue.script {
 		}
 
 		// select a hero for training
-		private function getHeroForNPC() : HeroBean {		
+		private function getHeroForNPC() : HeroBean {
 			var config:int = getConfig(CONFIG_HERO);
 			var pBest:HeroBean = bestPoliticsHero();
 			var iBest:HeroBean = (getConfig(CONFIG_RESEARCH) > 0 && getConfig(CONFIG_HERO) % 10 > 0) ? bestIntelHero() : null;
@@ -2840,7 +2838,7 @@ package scripts.jobQueue.script {
 			
 			var oldProd:int = productionRate;
 			var hero:HeroBean = bestIdleAttackHero();
-			var factor:Number = 1 + hero.power / 100.0;
+			var factor:Number = 1 + (hero.power / 100.0);
 			var reservedPeople:int = 200*factor;
 					
 			if (resource.workPeople + reservedPeople > resource.curPopulation && cityTimingAllowed("decreaserate", 60)) {
@@ -3767,7 +3765,7 @@ package scripts.jobQueue.script {
 			if (level == -1) return null;
 			
 			var tr:TroopBean = new TroopBean();
-			var archers:Array = new  Array(0, 50, 100, 200, 1400, 2800, 15000, 20000, 35050, 45000, 60000);
+			var archers:Array =  new Array(0, 50, 100, 200, 1400, 2800, 15000, 20000, 35050, 45000, 60000);
 			var warriors:Array = new Array(0,  0,   0,   0, 1250,  500,  1000,  1000,  5000, 10000, 39050);
 			var reqRally:Array = new Array(0,  1,   1,   1,    1,    1,     2,     3,     5,     6,    10);
 
@@ -4367,13 +4365,13 @@ package scripts.jobQueue.script {
 
 				var level:int = Map.getLevel(fieldId);
 				if (level > maxLevel || level < minLevel) continue;
-
+				
 				var type:int = Map.getType(fieldId);
 				if (type == -1) return false;	
 				if (type != FieldConstants.TYPE_NPC) {
 					logMessage("FARM NPC: NPC field is no longer an npc: " + Map.fieldIdToString(fieldId));
 					localNPCs.splice(ind, 1);
-					continue;				
+					continue;
 				}
 
 				var wantResource:Boolean = (!training) ? true : (getConfig(CONFIG_TRAINING) == 1) ? true : false;
@@ -4529,7 +4527,7 @@ package scripts.jobQueue.script {
 		private function handleAttackLocalFields() : Boolean {
 			handleAbandonLocalField();
 			
-			if (localFieldsDetailInfo.length == 0) return false;
+			if (localFieldsDetailInfo.length == 0) return false;	// should not happen
 			var targetField:int = localFieldsDetailInfo[0].id;
 			var level:int = Map.getLevel(targetField);
 						
@@ -4725,7 +4723,7 @@ package scripts.jobQueue.script {
 				if ((tr != null) && isScoutBombTroop(tr)) {
 				 	if (troop.archer + friendlyTroop.archer < 300000 || fortification.arrowTower == 0) {			
 				 		if (castle.goOutForBattle) {
-				 			logMessage("scout bomb, close gate");
+							logMessage("scout bomb, close gate");
 							castle.goOutForBattle = false;
 							ActionFactory.getInstance().getArmyCommands().setArmyGoOut(castle.id, false);
 						}
@@ -5865,12 +5863,10 @@ package scripts.jobQueue.script {
 			} else {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos +
     				"\n" + "" + xml.@reportUrl + "");
-			}
-    			
-    		
-    		if (report.title == "Scout Reports" ) {
+			}				
+			if (report.title == "Scout Reports" ) {
 				logMessage("Hero @ " + report.targetPos + " - " + xml.scoutReport.scoutInfo.@heroLevel + " " + xml.scoutReport.scoutInfo.@heroName);
-    		}
+			}
     	}
     	
     	private var heroStatusStrings:Array = new Array("Idle", "Mayor", "Defend", "March",

@@ -27,7 +27,7 @@ package scripts.jobQueue.script
 					return "farm";
 					break;
 				case BuildingConstants.TYPE_HEROS_MANSION:
-					return "feating hall";
+					return "feasting hall";
 					break;
 				case BuildingConstants.TYPE_BLACKSMITH:
 					return "forge";

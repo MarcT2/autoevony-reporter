@@ -167,7 +167,6 @@ package scripts.jobQueue.script
 			}
 		}
 
-
 		public function resetgoals():void {
 			currentAction = "resetgoals";
 			cityManager.resetAllConditions();
@@ -382,10 +381,8 @@ package scripts.jobQueue.script
 			}
 			onCommandFinished(true);
 		}
-
 		
-        public function traveltime(coords:String, troops:String) : void
-        {
+        public function traveltime(coords:String, troops:String) : void {
            	currentAction = "traveltime";
 			var targetId:int = ToFieldId(coords);
 			var troop:TroopBean = getTroops(troops);
@@ -447,7 +444,7 @@ package scripts.jobQueue.script
 				if(h.name.toLowerCase() == name.toLowerCase())
 				{
 					validHero = true;
-					if (h.status == CityStateConstants.HERO_STATUS_IDLE || h.status == CityStateConstants.HERO_STATUS_MAYOR)
+					if (h.status == CityStateConstants.HERO_STATUS_CAPTIVE || h.status == CityStateConstants.HERO_STATUS_IDLE || h.status == CityStateConstants.HERO_STATUS_MAYOR)
 					{
 						hero = h;
 					}

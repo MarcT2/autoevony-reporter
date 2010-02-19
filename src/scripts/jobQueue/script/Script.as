@@ -829,7 +829,10 @@ package scripts.jobQueue.script
 								break;
 							case gosubreturn:
 								gosubreturn();
-								break;	
+								break;
+							case logout:
+                                logout(command.params);
+                                break;
 							case repeat:
 								repeat(int(getCurrentCommand().params[0]));
 								break;
