@@ -24,7 +24,6 @@ package scripts.jobQueue.script
 	import com.umge.sovt.common.constants.ErrorCode;
 	import com.umge.sovt.common.constants.ObjConstants;
 	import com.umge.sovt.common.constants.TFConstants;
-	import com.umge.sovt.common.constants.TechConstants;
 	import com.umge.sovt.common.module.CommandResponse;
 	import com.umge.sovt.common.module.common.MapInfoSimpleResponse;
 	import com.umge.sovt.common.module.hero.HeroListResponse;
@@ -50,7 +49,6 @@ package scripts.jobQueue.script
 	import flash.utils.*;
 	
 	import mx.collections.ArrayCollection;
-	import mx.formatters.NumberFormatter;
 
 	/**
 	 * City state holds the state of the city and all the commands available
@@ -231,6 +229,32 @@ package scripts.jobQueue.script
 			cityManager.setBallsUsed(str)
 			onCommandFinished(true);
 		}
+		
+		public function npctroops(str:String) : void {
+			currentAction = "npctroops";
+			cityManager.npctroops(str);
+			onCommandFinished(true);
+		}
+		
+		public function valleytroops(str:String) : void {
+			currentAction = "valleytroops";
+			cityManager.valleytroops(str);
+			onCommandFinished(true);
+
+		}
+		
+		public function huntingpos(coords:String) : void {
+			currentAction = "huntingpos";
+			cityManager.huntingpos(coords);
+			onCommandFinished(true);			
+		}
+				
+		public function npcheroes(str:String) : void {
+			currentAction = "npcheroes";
+			cityManager.npcheroes(str);
+			onCommandFinished(true);
+		}
+		
 		public function abandontown() : void
 		{
 			currentAction = "abandontown";
@@ -353,32 +377,7 @@ package scripts.jobQueue.script
 		public function idrecall(armyId:int) : void
 		{
 			currentAction = "herorecall";
-
-			var army:ArmyBean;
-			for each (army in currentAttacks) {
-				if (army.armyId == armyId) {
-					onCommandResult("Recall troop with  id: " + army.armyId);
-					ActionFactory.getInstance().getArmyCommands().callBackArmy(castle.id, army.armyId);
-				}
-			}
-			for each (army in currentTransports) {
-				if (army.armyId == armyId) {
-					onCommandResult("Recall troop with  id: " + army.armyId);
-					ActionFactory.getInstance().getArmyCommands().callBackArmy(castle.id, army.armyId);
-				}
-			}
-			for each (army in currentScouts) {
-				if (army.armyId == armyId) {
-					onCommandResult("Recall troop with  id: " + army.armyId);
-					ActionFactory.getInstance().getArmyCommands().callBackArmy(castle.id, army.armyId);
-				}
-			}
-			for each (army in currentReinforce) {
-				if (army.armyId == armyId) {
-					onCommandResult("Recall troop with  id: " + army.armyId);
-					ActionFactory.getInstance().getArmyCommands().callBackArmy(castle.id, army.armyId);
-				}
-			}
+			cityManager.idrecall(armyId);
 			onCommandFinished(true);
 		}
 		
