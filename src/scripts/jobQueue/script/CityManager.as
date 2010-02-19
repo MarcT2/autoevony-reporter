@@ -158,6 +158,8 @@ package scripts.jobQueue.script {
 		// other customizations
 		private var npcHeroes:Array = null;
 		private var npcTroopBean:TroopBean = null;
+		private var npcList:Array = null;
+		private var npc10List:Array = null;
 		private var valleyTroopBean:TroopBean = null;
 		private var huntingLocation:int = -1;
 		
@@ -517,6 +519,8 @@ package scripts.jobQueue.script {
 			
 			npcHeroes = null;
 			npcTroopBean = null;
+			npcList = null;
+			npc10List = null;
 			valleyTroopBean = null;
 			huntingLocation = -1;
 		}
@@ -4369,9 +4373,14 @@ package scripts.jobQueue.script {
 			}
 			return count;
 		}
-		
+
 		private function handleAttackNPC( training:Boolean ) : Boolean {
-			if (localNPCs == null) return false;
+			if (localNPCs == null){
+				if (getConfig(CONFIG_DEBUG) > 0) {
+					logMessage("No NPC's in range");					
+				}
+				return false;
+			}
 			if (researches == null) return false;
 			if (isUnderBP()) return false;
 			
@@ -4393,7 +4402,7 @@ package scripts.jobQueue.script {
 			var hero:HeroBean;
 			hero = getHeroForNPC();
 			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: checking idle hero: " + heroToString(hero));
+				logMessage("FARM NPC: checking for an idle hero: " + heroToString(hero));
 			}
 			if (hero == null) return false;
 			
@@ -4406,21 +4415,25 @@ package scripts.jobQueue.script {
 				logMessage("FARM NPC: attack levels: " + minLevel + "," + maxLevel);
 			}
 
+			// use preset npcList if given, otherwise use localNPCs
+			var npcs:Array = (npcList != null) ? npcList : localNPCs;
 			var validCount:int = 0;
-			for (var ind:int = 0; ind < localNPCs.length; ind++) {
-				var fieldId:int = localNPCs[ind];
+			for (var ind:int = 0; ind < npcs.length; ind++) {
+				var fieldId:int = npcs[ind];
 				
 				// evasionFieldId canot be used as training npc to avoid confusion (especially on restart)
 				if (training && fieldId == evasionFieldId) continue;
 
-				var level:int = Map.getLevel(fieldId);
-				if (level > maxLevel || level < minLevel) continue;
+				if (npcList == null) {
+					var level:int = Map.getLevel(fieldId);
+					if (level > maxLevel || level < minLevel) continue;
+				}
 				
 				var type:int = Map.getType(fieldId);
 				if (type == -1) return false;	
 				if (type != FieldConstants.TYPE_NPC) {
 					logMessage("FARM NPC: NPC field is no longer an npc: " + Map.fieldIdToString(fieldId));
-					localNPCs.splice(ind, 1);
+					npcs.splice(ind, 1);
 					continue;
 				}
 
@@ -4455,7 +4468,7 @@ package scripts.jobQueue.script {
 			}
 
 			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: number of local npc " + localNPCs.length + ", appropriate level/troop: " + validCount);
+				logMessage("FARM NPC: number of local npc " + npcs.length + ", appropriate level/troop: " + validCount);
 			}
 
 			return false;
@@ -4484,36 +4497,40 @@ package scripts.jobQueue.script {
 			var hero:HeroBean;
 			hero = getHeroForNPC10();
 			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: checking for a idle hero: " + heroToString(hero));
+				logMessage("FARM10: checking for an idle hero: " + heroToString(hero));
 			}
-			
 			if (hero == null) return false;
 			
 			var minLevel:int = 10;
 			var maxLevel:int = 10;
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
-			}
 			if (hero.power < configs[CONFIG_NPC10HERO] ) {				
 				return false;
 			} 
 			
+			if (getConfig(CONFIG_DEBUG) > 0) {
+				logMessage("FARM10: checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
+			}
+
+			// use preset npc10List if given, otherwise use localNPC10s
+			var npc10s:Array = (npc10List != null) ? npc10List : localNPC10s;
 			var validCount:int = 0;
-			for (var ind:int = 0; ind < localNPC10s.length; ind++) {
-				var fieldId:int = localNPC10s[ind];
+			for (var ind:int = 0; ind < npc10s.length; ind++) {
+				var fieldId:int = npc10s[ind];
 				
 				// evasionFieldId canot be used as training npc to avoid confusion (especially on restart)
 				if (training && fieldId == evasionFieldId) continue;
 
-				var level:int = Map.getLevel(fieldId);
-				if (level > maxLevel || level < minLevel) continue;
-
+				if (npc10List == null) {
+					var level:int = Map.getLevel(fieldId);
+					if (level > maxLevel || level < minLevel) continue;
+				}
+				
 				var type:int = Map.getType(fieldId);
 				if (type == -1) return false;	
 				if (type != FieldConstants.TYPE_NPC) {
-					logMessage("NPC10 field is no longer an npc: " + Map.fieldIdToString(fieldId));
-					localNPC10s.splice(ind, 1);
-					continue;				
+					logMessage("FARM10: NPC10 field is no longer an npc: " + Map.fieldIdToString(fieldId));
+					npc10s.splice(ind, 1);
+					continue;
 				}
 
 				var wantResource:Boolean = (!training) ? true : (getConfig(CONFIG_TRAINING) == 1) ? true : false;
@@ -4539,18 +4556,20 @@ package scripts.jobQueue.script {
 				newArmy.troops = tr;
 				newArmy.resource = new ResourceBean();
 				
-				logMessage(((training) ? "TRAIN NPC10 " : "FARM NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " " + Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
+				logMessage(((training) ? "FARM NPC10: train at " : "FARM NPC10: attack NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " and " + troopBeanToString(newArmy.troops) +
+					Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
 				ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy, handleArmyCommandResponse);				
 				Map.updateInfo(fieldId);
 				return true;
 			}
 
 			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: Number of local npc10 " + localNPC10s.length + "");
+				logMessage("FARM10: Number of local npc10 " + npc10s.length + ", appropriate level/troop: " + validCount);
 			}
 
 			return false;
 		}
+		
 		// abandon conquer technique
 		private function handleAbandonLocalField() : void {
 			if (localFieldsDetailInfo.length == 0) return;
@@ -5310,6 +5329,58 @@ package scripts.jobQueue.script {
 			return true;
 		}
 
+		public function npclist(str:String) : Boolean {
+			var arr:Array = str.toLowerCase().split(" ");
+			var good:Boolean = true;
+			var any:Boolean = false;
+			
+			if (npcList == null) npcList = new Array();
+			for each(var locStr:String in arr) {
+				var fieldId:int = Map.coordStringToFieldId(locStr);
+				if (fieldId == -1) {
+					logMessage("Invalid location " + locStr);
+					good = false;
+				} else if (npcList.indexOf(fieldId) != -1) {
+					logMessage("Repetitive location " + locStr);
+					good = false;
+				} else {
+					npcList.push(fieldId);
+					any = true;
+				}
+			}
+			if (!any) {
+				logMessage("No npc added from " + str);
+				good = false;
+			}
+			return good;
+		}
+		
+		public function npc10list(str:String) : Boolean {
+			var arr:Array = str.toLowerCase().split(" ");
+			var good:Boolean = true;
+			var any:Boolean = false;
+			
+			if (npc10List == null) npc10List = new Array();
+			for each(var locStr:String in arr) {
+				var fieldId:int = Map.coordStringToFieldId(locStr);
+				if (fieldId == -1) {
+					logMessage("Invalid location " + locStr);
+					good = false;
+				} else if (npc10List.indexOf(fieldId) != -1) {
+					logMessage("Repetitive location " + locStr);
+					good = false;
+				} else {
+					npc10List.push(fieldId);
+					any = true;
+				}
+			}
+			if (!any) {
+				logMessage("No npc added from " + str);
+				good = false;
+			}
+			return good;
+		}
+		
 		private var loyaltyAttackFieldId:int = -1;
 		private var loyaltyAttackNumCav:int = 500;
 		private var loyaltyAttackOnly:Boolean = true;
@@ -5911,7 +5982,7 @@ package scripts.jobQueue.script {
     		if (report.isRead != 0) return;
     		
     		var type:String = (report.back) ? "BACK" : (report.attack) ? "ATT" : "DEFENSE";
-		var xml:XML = new XML(report.content);
+    		var xml:XML = new XML(report.content);
     		var startField:int = getFieldIdFromPosString(report.startPos);
     		var targetField:int = getFieldIdFromPosString(report.targetPos);
 
@@ -5992,8 +6063,7 @@ package scripts.jobQueue.script {
 			} else {
     			logMessage(type + " " + report.title + ", from " + report.startPos + " to " + report.targetPos +
     				"\n" + "" + xml.@reportUrl + "");
-			}
-			
+			}				
 			if (report.title == "Scout Reports" ) {
 				logMessage("Hero @ " + report.targetPos + " - " + xml.scoutReport.scoutInfo.@heroLevel + " " + xml.scoutReport.scoutInfo.@heroName);
 			}
@@ -6425,7 +6495,7 @@ package scripts.jobQueue.script {
     			fieldid = localNPCs[ x ].toString();
     			var obj:Object = new Object();
     			obj.col1 = Map.fieldIdToCoordString( fieldid );
-    			obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
+    			obj.col2 = int(Map.fieldDistance( castle.fieldId , fieldid )*100)/100.0;
     			data.addItem(obj);
     			x = x + 1
     		}
@@ -6438,7 +6508,7 @@ package scripts.jobQueue.script {
     			fieldid = localNPC10s[ x ].toString();
     			var obj:Object = new Object();
     			obj.col1 = Map.fieldIdToCoordString( fieldid );
-    			obj.col2 = Map.fieldDistance( castle.fieldId , fieldid );
+    			obj.col2 = int(Map.fieldDistance( castle.fieldId , fieldid )*100)/100.0;
     			data.addItem(obj);
     			x = x + 1
     		}
@@ -6480,7 +6550,13 @@ package scripts.jobQueue.script {
 				if (str.indexOf("//") == 0) continue;
 
 				var args:Array = str.split(" ");
-				if (args.length != 2) {
+				if (args[0] == "npclist") {
+					args.splice(0, 1);
+					if (!npclist(args.join(" "))) good = false;
+				} else if (args[0] == "npc10list") {
+					args.splice(0, 1);
+					if (!npc10list(args.join(" "))) good = false;
+				} else if (args.length != 2) {
 					good = false;
 					logMessage("Invalid line: " + str);
 				} else if (args[0] == "build") {
@@ -6526,7 +6602,7 @@ package scripts.jobQueue.script {
 						good = false;
 					}
 				} else {
-					logMessage("Error: " + args[0] + " must be either ballsused, build, config, fortification, huntingpos, npcheroes, npctroop, npctroops, research, troop, or valleytroops");
+					logMessage("Error: " + args[0] + " must be either ballsused, build, config, fortification, huntingpos, npcheroes, npclist, npc10list, npctroop, npctroops, research, troop, or valleytroops");
 					good = false;
 				}
 			}
