@@ -65,12 +65,12 @@ package scripts.jobQueue.script
 
 		public function logError(message:String) : void
 		{
-			dispatchEvent(new ScriptLogEvent("(" + m_city.castle.name + ") - " + message, ScriptLogEvent.ERROR));
+			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + m_city.castle.name + ") - " + message, ScriptLogEvent.ERROR + "</font>"));
 		}
 
-		public function logMessage(message:String) : void
+		public function logMessage(message:String, color:String = "#000000" ) : void
 		{
-			dispatchEvent(new ScriptLogEvent("(" + m_city.castle.name + ") - " + message));
+			dispatchEvent(new ScriptLogEvent("<font color='#ff0000'>(" + m_city.castle.name + ")</font> - <font color='"+ color + "'>" + message + "</font>"));
 		}
 
 		public function logBuildAction(action:String, d:Date, b:BuildingBean, c:CastleBean) : void

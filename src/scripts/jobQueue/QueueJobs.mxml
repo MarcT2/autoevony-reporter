@@ -92,6 +92,11 @@
 				commandLabel.addEventListener(MouseEvent.ROLL_OVER, label_rollOver);
 				commandLabel.addEventListener(MouseEvent.ROLL_OUT, label_rollOut);
 				
+				clrButton.setStyle('fontSize','10');
+				clrButton.setStyle('fontWeight','normal');
+				clrButton.setStyle("themeColor", 0x000000 );
+				clrButton.setStyle("color", "#000000");									
+
 				mainPanel.addEventListener(MouseEvent.CLICK,
 				function (event:MouseEvent) : void {
 					if (event.target is UITextField) {
@@ -477,7 +482,7 @@
 				allianceChatLabel.setStyle('fontSize','10');
 				allianceChatLabel.setStyle('fontWeight','normal');
 				allianceChatLabel.setStyle("themeColor", 0x3333FF );
-				allianceChatLabel.setStyle("color", "#3333FF");					
+				allianceChatLabel.setStyle("color", "#3333FF");
 				privateChatLabel.setStyle('fontSize','10');
 				privateChatLabel.setStyle('fontWeight','normal');				
 				privateChatLabel.setStyle("themeColor", 0xFF33FF );
@@ -1020,8 +1025,13 @@
 	<mx:ViewStack id="citiesViewStack" width="100%" height="50%" ></mx:ViewStack>
 		<mx:HDividedBox width="100%" id="logChatBox" horizontalGap="3" height="50%" borderStyle="solid" borderThickness="0" verticalAlign="bottom">
 			<mx:VBox width="50%" height="100%" verticalGap="0" borderStyle="none" id="vlogs">
-				<mx:TextArea fontFamily="_sans" fontSize="11" dropShadowEnabled="false" width="100%" id="logs" height="100%" enabled="true">				
-				</mx:TextArea>
+				<mx:VDividedBox height="100%" width="100%" verticalGap="2">
+					<mx:HBox width="100%" height="24">
+						<mx:Label text="Logs:" width="90%" height="20" fontSize="11"/>
+						<mx:Button label="Clear" height="20" click="clearLogs()" id="clrButton"/>
+					</mx:HBox>
+					<mx:TextArea fontFamily="_sans" fontSize="11" dropShadowEnabled="false" width="100%" id="logs" height="310" wordWrap="true" editable="false" enabled="true" right="0" bottom="0"/>
+				</mx:VDividedBox>
 			</mx:VBox>
 			<mx:VBox width="50%" height="100%" verticalGap="0" borderStyle="none" id="vchatbox">
 				<mx:VDividedBox height="100%" width="100%" verticalGap="2">

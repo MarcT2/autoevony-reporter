@@ -3803,9 +3803,9 @@ package scripts.jobQueue.script {
 			if (valleyTroopBean != null) return getPresetTroopBean(valleyTroopBean);
 			
 			var tr:TroopBean = new TroopBean();
-			var archers:Array =  new Array(0, 50, 100, 200, 1400, 2800, 15000, 20000, 35050, 45000, 60000);
-			var warriors:Array = new Array(0,  0,   0,   0, 1250,  500,  1000,  1000,  5000, 10000, 39050);
-			var reqRally:Array = new Array(0,  1,   1,   1,    1,    1,     2,     3,     5,     6,    10);
+			var archers:Array =  new Array(0, 50, 100, 200,  400,  800, 1600,  3200,  6400, 12800, 19990);
+			var warriors:Array = new Array(0,  0,   0,   0, 1250, 2500, 5000, 10000, 20000, 40000, 60000);
+			var reqRally:Array = new Array(0,  1,   1,   1,    1,    1,    1,     2,     3,     6,     8);
 
 			var layers:Array = new Array(0, 0, 0, 0,  1, 1, 1, 1, 1, 1, 1);
 			var types:Array = new Array(TFConstants.T_SWORDSMEN, TFConstants.T_PIKEMAN, TFConstants.T_SCOUTER);			
@@ -4853,7 +4853,7 @@ package scripts.jobQueue.script {
 				var interval:int = (ind == -1 || enemyArmies[ind].reachTime > new Date().getTime() + 3600*1000) ? 600 : 60;
 				if (cityTimingAllowed("attack", interval)) {
 					if (cityTimingAllowed("allattacks", 300)) {
-						logMessage("ATTACK by: " + attackArmyToString(enemyArmies[0]) + ", " + enemyArmies.length + " waves");
+						logMessage("ATTACK by: " + attackArmyToString(enemyArmies[0]) + ", " + enemyArmies.length + " waves" , "#ff0000");
 						for (i = 1; i < enemyArmies.length; i++) {
 							a = enemyArmies[i];
 							if (isJunkTroop(a.troop)) continue;
@@ -4861,7 +4861,7 @@ package scripts.jobQueue.script {
 						}
 					} else {
 						if (ind == -1) ind = 0;
-						logMessage("ATTACK by: " + attackArmyToString(enemyArmies[ind]) + ", " + enemyArmies.length + " waves");
+						logMessage("ATTACK by: " + attackArmyToString(enemyArmies[ind]) + ", " + enemyArmies.length + " waves" , "#ff0000");
 					}
 				}
 			}
