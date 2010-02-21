@@ -652,15 +652,15 @@ package scripts.jobQueue.script {
 			if ( !attacked && buildCityLocation != -1 && castle.fieldId == buildCityFrom ) attacked = handleBuildCity();
 			if (!attacked && getConfig(CONFIG_BUILDNPC) > 0) attacked = handleBuildNPC(5);
 			if (!attacked && getConfig(CONFIG_BUILD10) > 0) attacked = handleBuildNPC(10);
-			if (ready && !attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForResource();
+			if (ready && !attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForResource(5);
 			if (ready && !attacked && getConfig(CONFIG_DOFARM10) > 0 ) {
 				if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Farm LVL10 NPC is Running ... Experimental ***");				
-				attacked = handleAttackNPC10ForResource();
+				attacked = handleAttackNPCForResource(10);
 			}
 			if (!attacked && getConfig(CONFIG_VALLEY) > 0) attacked = handleAttackResourceFields();
 			if (!attacked && getConfig(CONFIG_HUNTING) > 0) attacked = handleAttackLocalFields();
-			if (!attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForTrainingOrResource();
-			if (!attacked && getConfig(CONFIG_DOFARM10) > 0 ) attacked = handleAttackNPC10ForTrainingOrResource();			
+			if (!attacked && getConfig(CONFIG_NPC) > 0 ) attacked = handleAttackNPCForTrainingOrResource(5);
+			if (!attacked && getConfig(CONFIG_DOFARM10) > 0 ) attacked = handleAttackNPCForTrainingOrResource(10);			
 
 			if (getConfig(CONFIG_ABANDON) > 0) handleAbandon();
  			handleIdleUpdates();
@@ -4312,41 +4312,22 @@ package scripts.jobQueue.script {
 			return resBalanced && resourceAvailableForTroop() && resourceAvailableForFortification() && totalValue > (500+fortification.arrowTower) * archerValue / 2 * factor;
 		}
 
-		private function handleAttackNPCForResource() : Boolean {
+		private function handleAttackNPCForResource( level:int ) : Boolean {
 			if (!marketReady() || hasTooMuchResource(1)) return false;
-			return handleAttackNPC( 5, false );
+			return handleAttackNPC( level, false );
 		}
 
-		private function handleAttackNPC10ForResource() : Boolean {
-			if (!marketReady() || hasTooMuchResource(1)) return false;
-			return handleAttackNPC( 10, false );
-		}
-
-		private function handleAttackNPCForTrainingOrResource() : Boolean {
+		private function handleAttackNPCForTrainingOrResource( level:int ) : Boolean {
 			if (!marketReady()) {
 				return false;
 			} else if (getConfig(CONFIG_NPCLIMIT) > 0 && hasTooMuchResource(getConfig(CONFIG_NPCLIMIT))) {
 				if (getConfig(CONFIG_TRAINING) > 0) {
-					return handleAttackNPC( 5, true );
+					return handleAttackNPC( level, true );
 				} else {
 					return false;
 				}
 			} else {
-				return handleAttackNPC( 5, false );
-			}
-		}
-		
-		private function handleAttackNPC10ForTrainingOrResource() : Boolean {
-			if (!marketReady()) {
-				return false;
-			} else if (getConfig(CONFIG_NPCLIMIT) > 0 && hasTooMuchResource(getConfig(CONFIG_NPCLIMIT))) {
-				if (getConfig(CONFIG_TRAINING) > 0) {
-					return handleAttackNPC( 10, true );
-				} else {
-					return false;
-				}
-			} else {
-				return handleAttackNPC( 10, false );
+				return handleAttackNPC( level, false );
 			}
 		}
 		
@@ -4835,7 +4816,7 @@ package scripts.jobQueue.script {
 			var rsLevel:int = getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD);
 			
 			if (troop.carriage <= 1) return false;			// don't bother
-			if (handleAttackNPCForTrainingOrResource()) return true;
+			if (handleAttackNPCForTrainingOrResource(5) || handleAttackNPCForTrainingOrResource(10)) return true;
 
 			// if (handleAttackNPCForResource()) return true;
 
@@ -5125,7 +5106,7 @@ package scripts.jobQueue.script {
 						logMessage("Unable to get POSITIVE gold rate");
 						
 					// npc attack is still errornous when not there is not enough food to send troop out
-					if (cityTimingAllowed("emegencynpcfarming", 60)) handleAttackNPCForResource();
+					if (cityTimingAllowed("emegencynpcfarming", 60)) handleAttackNPCForResource(5);
 
 					if (resource.support < 5) {
 						// it's quite desperate now -- the town may not survive the attack
