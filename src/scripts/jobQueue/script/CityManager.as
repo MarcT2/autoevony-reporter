@@ -31,6 +31,10 @@ package scripts.jobQueue.script {
 		private static var POW2:Array = new Array(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048);
 		private var NPCBALLISTAS:Array = new Array(0, 20, 50, 170, 250, 550);
 		private static var NPCTRANSPORTS:Array = new Array(0, 43, 71, 240, 452, 798);
+		private static var NPC10ARCHERS:Array = new Array(0, 92000, 91000, 92500);
+		private static var NPC10SCOUTS:Array = new Array(0, 6000, 6000, 3600);
+		private static var NPC10WARRIORS:Array = new Array(0, 0, 1000, 750);
+		private static var NPC10WORKERS:Array = new Array(0, 0, 0, 750);
 		private static var CONFIG_NPC:String = "npc";
 		private static var CONFIG_NPCLIMIT:String = "npclimit";
 		private static var CONFIG_COMFORT:String = "comfort";
@@ -3712,26 +3716,15 @@ package scripts.jobQueue.script {
 			var tr:TroopBean = new TroopBean();
 			var net:int = 0;
 			if (level == 10 ) { 
-				if ( configs[CONFIG_DOFARM10] == 1 ) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92k,s:6k,t:2k ***");
-					tr.archer = 92000;
-					tr.scouter = 6000;
-					tr.carriage = 2000;
-				} else if ( configs[CONFIG_DOFARM10] == 2 ) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:91k,s:6k,warr:1k,t:2k ***");
-					tr.archer = 91000;
-					tr.scouter = 6000;
-					tr.militia = 1000;
-					tr.carriage = 2000;
-				} else if ( configs[CONFIG_DOFARM10] == 3 ) {
-					if (getConfig(CONFIG_DEBUG) > 0) logMessage("*** Using arch:92.4k,s:3k,warr:1.2k,work:1k,t:2k ***");
-					tr.archer = 92500;
-					tr.scouter = 3600;
-					tr.militia = 750;
-					tr.peasants = 750;
-					tr.carriage = 2000;
-				}
-	
+				if ( getConfig(CONFIG_DEBUG ) > 0 && configs[ CONFIG_DOFARM10 ] == 1) logMessage("*** Using arch:92k,s:6k,t:2k ***");
+				if ( getConfig(CONFIG_DEBUG ) > 0 && configs[ CONFIG_DOFARM10 ] == 2) logMessage("*** Using arch:91k,s:6k,warr:1k,t:2k ***");
+				if ( getConfig(CONFIG_DEBUG ) > 0 && configs[ CONFIG_DOFARM10 ] == 3) logMessage("*** Using arch:92.5k,s:3.6k,warr:750,work:750,t:2k ***");
+				tr.archer = NPC10ARCHERS[ configs[ CONFIG_DOFARM10 ] ];
+				tr.scouter = NPC10SCOUTS[ configs[ CONFIG_DOFARM10 ] ];
+				tr.militia = NPC10WARRIORS[ configs[ CONFIG_DOFARM10 ] ];
+				tr.peasants = NPC10WORKERS[ configs[ CONFIG_DOFARM10 ] ];
+				tr.carriage = 2000;
+				
 				if ( troop.archer < tr.archer ) net = 1;
 				if ( troop.scouter < tr.scouter ) net = 1;
 				if ( troop.militia < tr.militia ) net = 1;

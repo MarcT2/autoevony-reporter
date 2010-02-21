@@ -1,7 +1,7 @@
 package {
-        public class Version {
+		public class Version {
 		public static const build_number:String="straydawg & three-p-o";
-        public static const build_time:String="Feb 19, 2010";
-        public static const GAMECLIENTVERSION:String="091103_11";
-        }
+		public static const build_time:String="Feb 20, 2010";
+		public static const GAMECLIENTVERSION:String="091103_11";
+		}
 }
