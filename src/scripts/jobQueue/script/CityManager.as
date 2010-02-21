@@ -4314,12 +4314,12 @@ package scripts.jobQueue.script {
 
 		private function handleAttackNPCForResource() : Boolean {
 			if (!marketReady() || hasTooMuchResource(1)) return false;
-			return handleAttackNPC(false);
+			return handleAttackNPC( 5, false );
 		}
 
 		private function handleAttackNPC10ForResource() : Boolean {
 			if (!marketReady() || hasTooMuchResource(1)) return false;
-			return handleAttackNPC10(false);
+			return handleAttackNPC( 10, false );
 		}
 
 		private function handleAttackNPCForTrainingOrResource() : Boolean {
@@ -4327,12 +4327,12 @@ package scripts.jobQueue.script {
 				return false;
 			} else if (getConfig(CONFIG_NPCLIMIT) > 0 && hasTooMuchResource(getConfig(CONFIG_NPCLIMIT))) {
 				if (getConfig(CONFIG_TRAINING) > 0) {
-					return handleAttackNPC(true);
+					return handleAttackNPC( 5, true );
 				} else {
 					return false;
 				}
 			} else {
-				return handleAttackNPC(false);
+				return handleAttackNPC( 5, false );
 			}
 		}
 		
@@ -4341,12 +4341,12 @@ package scripts.jobQueue.script {
 				return false;
 			} else if (getConfig(CONFIG_NPCLIMIT) > 0 && hasTooMuchResource(getConfig(CONFIG_NPCLIMIT))) {
 				if (getConfig(CONFIG_TRAINING) > 0) {
-					return handleAttackNPC10(true);
+					return handleAttackNPC( 10, true );
 				} else {
 					return false;
 				}
 			} else {
-				return handleAttackNPC10(false);
+				return handleAttackNPC( 10, false );
 			}
 		}
 		
@@ -4367,11 +4367,10 @@ package scripts.jobQueue.script {
 			return count;
 		}
 
-		private function handleAttackNPC( training:Boolean ) : Boolean {
-			if (localNPCs == null){
-				if (getConfig(CONFIG_DEBUG) > 0) {
-					logMessage("No NPC's in range");					
-				}
+		private function handleAttackNPC( level:int, training:Boolean ) : Boolean {
+			if (localNPCs == null && localNPC10s == null) {
+				if (getConfig(CONFIG_DEBUG) > 0 && level == 5) logMessage("No NPC's in range");
+				if (getConfig(CONFIG_DEBUG) > 0 && level == 10) logMessage("No NPC10's in range");
 				return false;
 			}
 			if (researches == null) return false;
@@ -4386,30 +4385,31 @@ package scripts.jobQueue.script {
 
 			if (countActiveArmies() + extraSlot >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) return false;
 
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: checking troop to attack npc, ballista: " + troop.ballista);
-			}
-
-			if (troop.ballista < 20) return false;
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 5) logMessage("FARM NPC: checking troop to attack npc, ballista: " + troop.ballista);
+			if (troop.ballista < 20 && level == 5) return false;
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 10) logMessage("FARM10: checking for > 2000 transports to attack npc10: " + troop.carriage);
+			if (troop.carriage < 2000 && level == 10) return false;
 
 			var hero:HeroBean;
 			hero = getHeroForNPC();
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: checking for an idle hero: " + heroToString(hero));
-			}
+			if (level == 10) hero = getHeroForNPC10();
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 5) logMessage("FARM NPC: checking for an idle hero: " + heroToString(hero));
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 10) logMessage("FARM10: checking for an idle hero: " + heroToString(hero));
 			if (hero == null) return false;
 			
-			var minLevel:int = getConfig(CONFIG_NPC);
-			var maxLevel:int = 5;
+			var minLevel:int = level;
+			if (level == 5) minLevel = getConfig(CONFIG_NPC);
+			var maxLevel:int = level;
 			if (hero.power < 30 && maxLevel > 4) maxLevel = 4;
 			if (hero.power < 20 && maxLevel > 3) maxLevel = 3;
-
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: attack levels: " + minLevel + "," + maxLevel);
-			}
+			if (hero.power < configs[CONFIG_NPC10HERO] ) return false;
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 5) logMessage("FARM NPC: attack levels: " + minLevel + "," + maxLevel);
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 10) logMessage("FARM10: checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
 
 			// use preset npcList if given, otherwise use localNPCs
-			var npcs:Array = (npcList != null) ? npcList : localNPCs;
+			var npcs:Array
+			if (level == 5) npcs = (npcList != null) ? npcList : localNPCs;
+			if (level == 10) npcs = (npc10List != null) ? npc10List : localNPC10s;
 			var validCount:int = 0;
 			for (var ind:int = 0; ind < npcs.length; ind++) {
 				var fieldId:int = npcs[ind];
@@ -4417,9 +4417,9 @@ package scripts.jobQueue.script {
 				// evasionFieldId canot be used as training npc to avoid confusion (especially on restart)
 				if (training && fieldId == evasionFieldId) continue;
 
-				if (npcList == null) {
-					var level:int = Map.getLevel(fieldId);
-					if (level > maxLevel || level < minLevel) continue;
+				if ((level == 5 && npcList == null) || (level == 10 && npc10List == null)) {
+					var fieldlevel:int = Map.getLevel(fieldId);
+					if (fieldlevel > maxLevel || fieldlevel < minLevel) continue;
 				}
 				
 				var type:int = Map.getType(fieldId);
@@ -4453,112 +4453,21 @@ package scripts.jobQueue.script {
 				newArmy.troops = tr;
 				newArmy.resource = new ResourceBean();
 				
-				logMessage(((training) ? "FARM NPC: train at " : "FARM NPC: attack NPC ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " and " + troopBeanToString(newArmy.troops) +
-					Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
-				ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy, handleArmyCommandResponse);				
+				if (level == 5) {
+					logMessage(((training) ? "FARM NPC: train at " : "FARM NPC: attack NPC ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " and " + troopBeanToString(newArmy.troops) +
+						Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
+				}
+				if (level == 10) {
+					logMessage(((training) ? "FARM NPC10: train at " : "FARM NPC10: attack NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " and " + troopBeanToString(newArmy.troops) +
+						Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
+				}
+				ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy, handleArmyCommandResponse);
 				Map.updateInfo(fieldId);
 				return true;
 			}
 
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM NPC: number of local npc " + npcs.length + ", appropriate level/troop: " + validCount);
-			}
-
-			return false;
-		}
-
-		private function handleAttackNPC10(training:Boolean) : Boolean {
-			if (localNPC10s == null){
-				if (getConfig(CONFIG_DEBUG) > 0) {
-					logMessage("No NPC10's in range");					
-				}
-				return false;
-			}
-			if (researches == null) return false;
-			if (isUnderBP()) return false;
-			
-			var extraSlot:int = 1;
-
-			if (countActiveArmies() + extraSlot >= getBuildingLevel(BuildingConstants.TYPE_TRAINNING_FEILD)) return false;
-
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: checking for > 2000 transports to attack npc10: " + troop.carriage);
-			}
-
-			if (troop.carriage < 2000) return false;
-
-			var hero:HeroBean;
-			hero = getHeroForNPC10();
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: checking for an idle hero: " + heroToString(hero));
-			}
-			if (hero == null) return false;
-			
-			var minLevel:int = 10;
-			var maxLevel:int = 10;
-			if (hero.power < configs[CONFIG_NPC10HERO] ) {				
-				return false;
-			} 
-			
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: checking for a attack hero > " + configs[CONFIG_NPC10HERO] +  ": " + hero.power );
-			}
-
-			// use preset npc10List if given, otherwise use localNPC10s
-			var npc10s:Array = (npc10List != null) ? npc10List : localNPC10s;
-			var validCount:int = 0;
-			for (var ind:int = 0; ind < npc10s.length; ind++) {
-				var fieldId:int = npc10s[ind];
-				
-				// evasionFieldId canot be used as training npc to avoid confusion (especially on restart)
-				if (training && fieldId == evasionFieldId) continue;
-
-				if (npc10List == null) {
-					var level:int = Map.getLevel(fieldId);
-					if (level > maxLevel || level < minLevel) continue;
-				}
-				
-				var type:int = Map.getType(fieldId);
-				if (type == -1) return false;	
-				if (type != FieldConstants.TYPE_NPC) {
-					logMessage("FARM10: NPC10 field is no longer an npc: " + Map.fieldIdToString(fieldId));
-					npc10s.splice(ind, 1);
-					continue;
-				}
-
-				var wantResource:Boolean = (!training) ? true : (getConfig(CONFIG_TRAINING) == 1) ? true : false;
-				var tr:TroopBean = getTroopBeanForNPCLevel( 10 , wantResource );
-				if (tr == null) continue;
-
-				validCount++;
-				if (isArmyToward(fieldId)) continue;
-				if (training) {
-					if (!wantResource) {
-						if (!playerTimingAllowed("attack" + fieldId, 3600, true)) continue;
-						if (!playerTimingAllowed("training" + fieldId, 3600)) continue;
-					} else {
-						if (!playerTimingAllowed("attack" + fieldId, 3600)) continue;
-					}
-				} else {
-					if (!playerTimingAllowed("attack" + fieldId, 6*3600)) continue;
-				}
-				var newArmy:NewArmyParam = new NewArmyParam();
-				newArmy.missionType = ObjConstants.ARMY_MISSION_OCCUPY;
-				newArmy.heroId = hero.id;
-				newArmy.targetPoint = fieldId;
-				newArmy.troops = tr;
-				newArmy.resource = new ResourceBean();
-				
-				logMessage(((training) ? "FARM NPC10: train at " : "FARM NPC10: attack NPC10 ") + Map.fieldIdToString(fieldId) + " with hero " + heroToString(hero) + " and " + troopBeanToString(newArmy.troops) +
-					Utils.formatTime(getAttackTravelTime(castle.fieldId, newArmy.targetPoint, newArmy.troops)));
-				ActionFactory.getInstance().getArmyCommands().newArmy(castle.id, newArmy, handleArmyCommandResponse);				
-				Map.updateInfo(fieldId);
-				return true;
-			}
-
-			if (getConfig(CONFIG_DEBUG) > 0) {
-				logMessage("FARM10: Number of local npc10 " + npc10s.length + ", appropriate level/troop: " + validCount);
-			}
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 5) logMessage("FARM NPC: number of local npc " + npcs.length + ", appropriate level/troop: " + validCount);
+			if (getConfig(CONFIG_DEBUG) > 0 && level == 10 ) logMessage("FARM10: Number of local npc10 " + npcs.length + ", appropriate level/troop: " + validCount);
 
 			return false;
 		}
