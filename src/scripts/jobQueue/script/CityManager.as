@@ -1805,7 +1805,7 @@ package scripts.jobQueue.script {
 			if (getConfig(CONFIG_TROOP) && countBuilding(BuildingConstants.TYPE_EMBASSY, 1) > 0) {
 				if (!castle.allowAlliance) {
 					castle.allowAlliance = true;
-					logMessage("Allow alliance troop");
+					logMessage("Allow alliance troop" , "#2B602D");
 					ActionFactory.getInstance().getArmyCommands().setAllowAllianceArmy(castle.id, true);
 				}
 			}
@@ -1850,7 +1850,7 @@ package scripts.jobQueue.script {
 				trace("add hero: " + heroToString(response.hero));
 				for (i = 0; i < heroes.length; i++) {
 					if (heroes[i].id == response.hero.id) {
-						logMessage("ABNORMAL hero addition, hero exists " + heroToString(heroes[i]));
+						logMessage("ABNORMAL hero addition, hero exists " + heroToString(heroes[i]) , "#660000");
 						return;
 					}
 				}
@@ -1895,13 +1895,13 @@ package scripts.jobQueue.script {
 				while (experience >= 100*level*level) {
 					experience -= 100*level*level;
 					level++;
-					logMessage("uplevel hero: " + heroToString(hero) , "#000066");
+					logMessage("uplevel hero: " + heroToString(hero) , "#7A1595");
 					ActionFactory.getInstance().getHeroCommand().levelUp(castle.id, hero.id);
 					any = true;
 				}
 				if (!isLoyal(hero) && resource.gold >= hero.level * 100) {
 					if (cityTimingAllowed("reward" + hero.id, 900)) {
-						logMessage("reward hero: " + heroToString(hero) + "#000066");
+						logMessage("reward hero: " + heroToString(hero) , "#7A1595");
 						ActionFactory.getInstance().getHeroCommand().awardGold(castle.id, hero.id);
 						resource.gold -= hero.level*100;
 						any = true;
@@ -1917,15 +1917,15 @@ package scripts.jobQueue.script {
 
 				if (hero.remainPoint > 0) {
 					if (hero == pHero || (hero.management >= hero.power && hero.management >= hero.stratagem)) {
-						logMessage("assign point for politics hero: " + heroToString(hero));
+						logMessage("assign point for politics hero: " + heroToString(hero) , "#7A1595");
 						ActionFactory.getInstance().getHeroCommand().addPoint(castle.id, hero.id, hero.remainPoint+hero.management, hero.power, hero.stratagem, handleHeroAddPointResponse);
 						any = true;
 					} else if (hero.stratagem >= hero.power && hero.stratagem >= hero.management) {
-						logMessage("assign point for intel hero: " + heroToString(hero));
+						logMessage("assign point for intel hero: " + heroToString(hero), "#7A1595");
 						ActionFactory.getInstance().getHeroCommand().addPoint(castle.id, hero.id, hero.management, hero.power, hero.remainPoint+hero.stratagem, handleHeroAddPointResponse);
 						any = true;
 					} else  {
-						logMessage("assign point for attack hero: " + heroToString(hero));
+						logMessage("assign point for attack hero: " + heroToString(hero), "#7A1595");
 						ActionFactory.getInstance().getHeroCommand().addPoint(castle.id, hero.id, hero.management, hero.remainPoint+hero.power, hero.stratagem, handleHeroAddPointResponse);
 						any = true;
 					}
